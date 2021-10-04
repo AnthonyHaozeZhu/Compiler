@@ -9,4 +9,10 @@
 	.global main
 	.type main, %function
 mian:
-
+	.data 
+	.global a
+	.align 4
+	.size a, 4
+a:
+	.word 0
+	
