@@ -31,7 +31,7 @@ main:
 	add r0, r0, #4
 	mov r1, r4 @将r4中的值即a的值赋予r1
 	bl printf @打印a的值
-	add r0, r0, #4
+	ldr r0, =_bridge2
 	mov r1, r5 @将r5中的值即b的值赋予r1
 	bl printf @打印b的值
 Loop:
@@ -40,6 +40,7 @@ Loop:
 	beq RETURN @比较r6和0的大小用于跳转
 	mov r6, r5 @t = b
 	add r5, r5, r4 @b = a + b
+	ldr r0, =_bridge3
 	mov r1, r5 @将r5中的值即b的值赋予r1
 	bl printf  @cout << b << endl;
 	mov r4, r6 @a = t
@@ -52,7 +53,12 @@ RETURN:
 _bridge:
 	.asciz "%d"
 	.asciz " a: %d \n"
-	.asciz " b: %d \n"
+
+_bridge2:
+	.asciz "b: %d \n"
+
+_bridge3:
+        .asciz " %d "
 	
 
 .section .note.GNU-stack,"",%progbits @ do you know what's the use of this :-)
