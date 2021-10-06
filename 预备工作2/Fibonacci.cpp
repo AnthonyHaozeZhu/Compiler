@@ -7,8 +7,9 @@ int main()
     b = 1;
     i = 1;
     cin >> n;
-    cout << a << endl;
-    cout << b << endl;
+    cout << "a:" << a << endl;
+    cout << "b:" << b << endl;
+    cout << "we are going to loop now! " << endl;
     while (i < n)
     {
         t = b;
