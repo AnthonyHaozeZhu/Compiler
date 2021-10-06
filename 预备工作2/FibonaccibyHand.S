@@ -18,48 +18,77 @@
 main:	
 	push {fp, lr} @将fp的当前值保存在堆栈上，然后将sp寄存器的值保存在fp中，lr中存储的是pc的保存在lr中
 	sub sp, sp, #4 @在栈中开辟一块大小为4的内存地址，用于存储即将输入的数据
-	ldr r0, =_bridge
+	ldr r0, =_cin
 	mov r1, sp @将sp的值传输给r1寄存器，使scanf传入的值存储在栈上，即栈顶的值是n
 	bl scanf
-	ldr r2, [sp] @取出sp指针指向的地址中的内容，即栈顶中的内容（输入的n的值）
+	ldr r6, [sp, #0] @取出sp指针指向的地址中的内容，即栈顶中的内容（输入的n的值）
 	add sp, sp, #4 @恢复栈顶，释放内存空间
-	add r4, r4, #0 @a = 0
-	add r5, r5, #1 @b = 1
-	add r2, r2, #1 @i = 1
-	@r4中存a的值，r5中存b的值，r2中存i的值，r3中存n的值
+
+	@测试是否写入
+	@ldr r0, =_bridge3
+        @mov r1, r2
+        @bl printf
+
+	mov r4, #0 @a = 0
+	mov r5, #1 @b = 1
+	mov r7, #1 @i = 1
+	@r4中存a的值，r5中存b的值，r7中存i的值，r6中存n的值
 	ldr r0, =_bridge
-	add r0, r0, #4
 	mov r1, r4 @将r4中的值即a的值赋予r1
 	bl printf @打印a的值
 	ldr r0, =_bridge2
 	mov r1, r5 @将r5中的值即b的值赋予r1
 	bl printf @打印b的值
+        ldr r0, =_bridge4
+        bl printf
+	
+	@输出进行调试
+	@ldr r0, =_bridge3
+        @mov r1, r6
+        @bl printf
+        @ldr r0, =_bridge3
+        @mov r1, r7
+        @bl printf
+
 Loop:
-	sub r6, r3, r2 @r6为临时变量的寄存器，将n和i相减存入r6
-	cmp r6, #0
-	beq RETURN @比较r6和0的大小用于跳转
-	mov r6, r5 @t = b
+	@输出进行调试
+	@ldr r0, =_bridge4
+	@bl printf
+	@ldr r0, =_bridge3
+	@mov r1, r6
+        @bl printf
+	@ldr r0, =_bridge3
+        @mov r1, r7
+        @bl printf
+
+	cmp r6, r7
+	ble RETURN @比较r7和r6（即i和n）的大小用于跳转
+	mov r8, r5 @t = b @r8为临时变量的寄存器
 	add r5, r5, r4 @b = a + b
 	ldr r0, =_bridge3
 	mov r1, r5 @将r5中的值即b的值赋予r1
 	bl printf  @cout << b << endl;
-	mov r4, r6 @a = t
-	add r2, r2, #1 @i = i + 1
+	mov r4, r8 @a = t
+	add r7, r7, #1 @i = i + 1
 	b Loop
 RETURN:
 	pop {fp, lr} @上下文切换
 	bx lr @return 0
 .data @数据段
-_bridge:
+_cin:
 	.asciz "%d"
-	.asciz " a: %d \n"
+
+_bridge:
+	.asciz "a:%d\n"
 
 _bridge2:
-	.asciz "b: %d \n"
+	.asciz "b:%d\n"
 
 _bridge3:
-        .asciz " %d "
-	
+        .asciz "%d\n"
+
+_bridge4:
+	.asciz "We are going to loop now! \n"
 
 .section .note.GNU-stack,"",%progbits @ do you know what's the use of this :-)
 
