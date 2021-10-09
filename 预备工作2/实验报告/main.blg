@@ -1,0 +1,54 @@
+This is BibTeX, Version 0.99d (TeX Live 2020)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: unsrt.bst
+Illegal, another \bibstyle command---line 61 of file main.aux
+ : \bibstyle
+ :          {plain}
+I'm skipping whatever remains of this command
+Database file #1: references.bib
+Warning--empty publisher in bl
+Warning--empty journal in m
+Warning--empty publisher in zhn
+You've used 3 entries,
+            1791 wiz_defined-function locations,
+            457 strings with 3647 characters,
+and the built_in function-call counts, 442 in all, are:
+= -- 32
+> -- 12
+< -- 0
++ -- 6
+- -- 3
+* -- 15
+:= -- 76
+add.period$ -- 9
+call.type$ -- 3
+change.case$ -- 1
+chr.to.int$ -- 0
+cite$ -- 6
+duplicate$ -- 28
+empty$ -- 53
+format.name$ -- 3
+if$ -- 96
+int.to.chr$ -- 0
+int.to.str$ -- 3
+missing$ -- 5
+newline$ -- 18
+num.names$ -- 3
+pop$ -- 21
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 0
+skip$ -- 7
+stack$ -- 0
+substring$ -- 0
+swap$ -- 2
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 0
+warning$ -- 3
+while$ -- 3
+width$ -- 4
+write$ -- 29
+(There was 1 error message)
