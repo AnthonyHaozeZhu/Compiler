@@ -361,6 +361,7 @@ INPUT /usr/local/texlive/2020/texmf-dist/tex/latex/listings/lstlang1.sty
 INPUT /usr/local/texlive/2020/texmf-dist/tex/latex/listings/lstmisc.sty
 INPUT /usr/local/texlive/2020/texmf-dist/tex/latex/listings/lstmisc.sty
 INPUT 1.png
+INPUT 2.png
 INPUT main.bbl
 INPUT main.bbl
 INPUT main.aux

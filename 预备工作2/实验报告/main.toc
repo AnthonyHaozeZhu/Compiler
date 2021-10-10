@@ -42,3 +42,5 @@
 \contentsline {subsubsection}{\numberline {1.}关于函数的栈指针操作}{9}{subsubsection.2.1.1}%
 \contentsline {subsubsection}{\numberline {2.}I/O操作}{9}{subsubsection.2.1.2}%
 \contentsline {subsection}{\numberline {（二）}汇编程序编写}{10}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {1.}斐波那契数列}{10}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.}求平方}{12}{subsubsection.2.2.2}%
