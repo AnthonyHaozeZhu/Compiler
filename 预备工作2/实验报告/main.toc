@@ -1,16 +1,44 @@
 \contentsline {section}{\numberline { 一、}SysY语言特性和形式化定义}{1}{section.1}%
 \contentsline {subsection}{\numberline {（一）}SysY语言特性}{1}{subsection.1.1}%
 \contentsline {subsubsection}{\numberline {1.}关键字}{1}{subsubsection.1.1.1}%
-\contentsline {subsubsection}{\numberline {2.}常量}{1}{subsubsection.1.1.2}%
-\contentsline {subsubsection}{\numberline {3.}变量}{2}{subsubsection.1.1.3}%
-\contentsline {paragraph}{变量的定义}{2}{paragraph*.4}%
+\contentsline {subsubsection}{\numberline {2.}变量}{1}{subsubsection.1.1.2}%
+\contentsline {paragraph}{三种基本类型}{2}{paragraph*.4}%
+\contentsline {subparagraph}{整型变量}{2}{subparagraph*.5}%
+\contentsline {subparagraph}{实型变量}{2}{subparagraph*.6}%
+\contentsline {subparagraph}{字符变量}{2}{subparagraph*.7}%
+\contentsline {paragraph}{变量的定义}{2}{paragraph*.8}%
+\contentsline {subsubsection}{\numberline {3.}常量}{2}{subsubsection.1.1.3}%
 \contentsline {subsubsection}{\numberline {4.}运算符和表达式}{2}{subsubsection.1.1.4}%
-\contentsline {paragraph}{表达式}{3}{paragraph*.10}%
-\contentsline {paragraph}{运算符优先级}{4}{paragraph*.11}%
-\contentsline {subsubsection}{\numberline {5.}函数}{4}{subsubsection.1.1.5}%
-\contentsline {subsection}{\numberline {（二）}形式化定义}{4}{subsection.1.2}%
-\contentsline {section}{\numberline { 二、}汇编编程}{5}{section.2}%
-\contentsline {subsection}{\numberline {（一）}一些基本操作}{5}{subsection.2.1}%
-\contentsline {subsubsection}{\numberline {1.}关于函数的栈指针操作}{5}{subsubsection.2.1.1}%
-\contentsline {subsubsection}{\numberline {2.}I/O操作}{5}{subsubsection.2.1.2}%
-\contentsline {subsection}{\numberline {（二）}汇编程序编写}{6}{subsection.2.2}%
+\contentsline {paragraph}{表达式}{2}{paragraph*.14}%
+\contentsline {paragraph}{运算符优先级}{4}{paragraph*.15}%
+\contentsline {subsubsection}{\numberline {5.}语句}{4}{subsubsection.1.1.5}%
+\contentsline {paragraph}{表达式语句}{4}{paragraph*.16}%
+\contentsline {paragraph}{分支语句}{4}{paragraph*.17}%
+\contentsline {paragraph}{循环语句}{4}{paragraph*.18}%
+\contentsline {paragraph}{转向语句}{4}{paragraph*.19}%
+\contentsline {subsubsection}{\numberline {6.}函数}{4}{subsubsection.1.1.6}%
+\contentsline {paragraph}{函数的定义}{4}{paragraph*.20}%
+\contentsline {paragraph}{函数说明}{4}{paragraph*.21}%
+\contentsline {paragraph}{形式化定义}{5}{paragraph*.22}%
+\contentsline {paragraph}{函数的参数}{5}{paragraph*.23}%
+\contentsline {subsection}{\numberline {（二）}形式化定义}{5}{subsection.1.2}%
+\contentsline {subsubsection}{\numberline {1.}变量声明}{6}{subsubsection.1.2.1}%
+\contentsline {subsubsection}{\numberline {2.}常量声明}{6}{subsubsection.1.2.2}%
+\contentsline {subsubsection}{\numberline {3.}表达式}{6}{subsubsection.1.2.3}%
+\contentsline {subsubsection}{\numberline {4.}赋值表达式}{6}{subsubsection.1.2.4}%
+\contentsline {subsubsection}{\numberline {5.}逻辑表达式}{6}{subsubsection.1.2.5}%
+\contentsline {subsubsection}{\numberline {6.}关系表达式}{7}{subsubsection.1.2.6}%
+\contentsline {subsubsection}{\numberline {7.}算数表达式}{7}{subsubsection.1.2.7}%
+\contentsline {subsubsection}{\numberline {8.}系统操作}{7}{subsubsection.1.2.8}%
+\contentsline {subsubsection}{\numberline {9.}语句}{7}{subsubsection.1.2.9}%
+\contentsline {subsubsection}{\numberline {10.}循环语句}{7}{subsubsection.1.2.10}%
+\contentsline {subsubsection}{\numberline {11.}分支语句}{8}{subsubsection.1.2.11}%
+\contentsline {subsubsection}{\numberline {12.}跳转语句}{8}{subsubsection.1.2.12}%
+\contentsline {subsubsection}{\numberline {13.}函数}{8}{subsubsection.1.2.13}%
+\contentsline {subsubsection}{\numberline {14.}注释}{8}{subsubsection.1.2.14}%
+\contentsline {subsubsection}{\numberline {15.}输入输出流}{8}{subsubsection.1.2.15}%
+\contentsline {section}{\numberline { 二、}汇编编程}{9}{section.2}%
+\contentsline {subsection}{\numberline {（一）}一些基本操作}{9}{subsection.2.1}%
+\contentsline {subsubsection}{\numberline {1.}关于函数的栈指针操作}{9}{subsubsection.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.}I/O操作}{9}{subsubsection.2.1.2}%
+\contentsline {subsection}{\numberline {（二）}汇编程序编写}{10}{subsection.2.2}%
