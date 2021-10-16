@@ -69,7 +69,7 @@
 #line 1 "表达式计算.y"
 
 #include <stdio.h>
-//#include <stdlib.h>
+#include <stdlib.h>
 #ifndef YYSTYPE
 #define YYSTYPE double 
 #endif
@@ -129,7 +129,7 @@ extern int yydebug;
     add = 258,
     sub = 259,
     mul = 260,
-    div = 261,
+    DIV = 261,
     l_bracket = 262,
     r_barcket = 263,
     NUMBER = 264,
@@ -522,7 +522,7 @@ static const yytype_int8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "add", "sub", "mul", "div", "l_bracket",
+  "$end", "error", "$undefined", "add", "sub", "mul", "DIV", "l_bracket",
   "r_barcket", "NUMBER", "UMINUS", "';'", "$accept", "lines", "expr", YY_NULLPTR
 };
 #endif
@@ -1621,7 +1621,7 @@ int yylex()
 			return mul;
 		}
 		else if(t == '/'){
-			return div;
+			return DIV;
 		}
 		else if(t == '('){
 			return l_bracket;

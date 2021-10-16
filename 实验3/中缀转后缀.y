@@ -34,27 +34,27 @@ lines   :   lines expr ';' {printf("%s\n", $2);}
 expr    :   expr add expr {$$ = (char*)malloc(50 * sizeof(char));
                             strcpy($$, $1);
                             strcat($$, $3);
-                            strcat($$, "+");
+                            strcat($$, "+ ");
                           }
         |   expr sub expr {$$ = (char*)malloc(50 * sizeof(char));
                             strcpy($$, $1);
                             strcat($$, $3);
-                            strcat($$, "-");
+                            strcat($$, "- ");
                           }
         |   expr mul expr{$$ = (char*)malloc(50 * sizeof(char));
                             strcpy($$, $1);
                             strcat($$, $3);
-                            strcat($$, "*");
+                            strcat($$, "* ");
                           }
         |   l_bracket expr r_barcket  {$$ = $2;}
         |   expr DIV expr{$$ = (char*)malloc(50 * sizeof(char));
                             strcpy($$, $1);
                             strcat($$, $3);
-                            strcat($$, "/");
+                            strcat($$, "/ ");
                           }
         |   sub expr %prec UMINUS{$$ = (char*)malloc(50 * sizeof(char));
                                     strcpy($$, $2);
-                                    strcat($$, "-");
+                                    strcat($$, "- ");
                                  }
         |   NUMBER {$$ = (char*)malloc(50 * sizeof(char));
                     strcpy($$, $1);
@@ -88,21 +88,6 @@ int yylex()
             ungetc(t, stdin);
             return NUMBER;
         }
-        /*
-        else if((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || t == '_'){
-            int ti = 0;
-            whlie((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_') || (t >= '0' && t <= '9'))
-            {
-                idStr[ti] = t;
-                ti++;
-                t = getchar();
-            }
-            idStr[ti]= '\0';
-            yylval = idStr;
-            ungetc(t, stdin);
-            return id;
-        }
-        */
         else if (( t >= 'a' && t <= 'z') || ( t >= 'A' && t <= 'Z') || ( t == '_'))
         {
             int ti = 0;

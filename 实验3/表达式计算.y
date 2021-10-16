@@ -1,6 +1,6 @@
 %{
 #include <stdio.h>
-//#include <stdlib.h>
+#include <stdlib.h>
 #ifndef YYSTYPE
 #define YYSTYPE double 
 #endif
@@ -13,12 +13,12 @@ void yyerror(const char* s);
 %token add 
 %token sub 
 %token mul 
-%token div 
+%token DIV 
 %token l_bracket 
 %token r_barcket 
 %token NUMBER
 %left add sub
-%left mul div
+%left mul DIV
 %right UMINUS
 
 %%
@@ -31,7 +31,7 @@ lines		:	lines expr ';' {printf("%f\n", $2);}
 expr		:	expr add expr {$$ = $1 + $3;}
 		|	expr sub expr {$$ = $1 - $3;}
 		|	expr mul expr {$$ = $1 * $3;}
-		|	expr div expr {$$ = $1 / $3;}
+		|	expr DIV expr {$$ = $1 / $3;}
 		|   l_bracket expr r_barcket  {$$ = $2;}
 		|	sub expr %prec UMINUS {$$ = -$2;}
 		|	NUMBER {$$ = $1;}
@@ -81,7 +81,7 @@ int yylex()
 			return mul;
 		}
 		else if(t == '/'){
-			return div;
+			return DIV;
 		}
 		else if(t == '('){
 			return l_bracket;

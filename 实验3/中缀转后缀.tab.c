@@ -1328,7 +1328,7 @@ yyreduce:
                           {yyval = (char*)malloc(50 * sizeof(char));
                             strcpy(yyval, yyvsp[-2]);
                             strcat(yyval, yyvsp[0]);
-                            strcat(yyval, "+");
+                            strcat(yyval, "+ ");
                           }
 #line 1334 "中缀转后缀.tab.c"
     break;
@@ -1338,7 +1338,7 @@ yyreduce:
                           {yyval = (char*)malloc(50 * sizeof(char));
                             strcpy(yyval, yyvsp[-2]);
                             strcat(yyval, yyvsp[0]);
-                            strcat(yyval, "-");
+                            strcat(yyval, "- ");
                           }
 #line 1344 "中缀转后缀.tab.c"
     break;
@@ -1348,7 +1348,7 @@ yyreduce:
                          {yyval = (char*)malloc(50 * sizeof(char));
                             strcpy(yyval, yyvsp[-2]);
                             strcat(yyval, yyvsp[0]);
-                            strcat(yyval, "*");
+                            strcat(yyval, "* ");
                           }
 #line 1354 "中缀转后缀.tab.c"
     break;
@@ -1364,7 +1364,7 @@ yyreduce:
                          {yyval = (char*)malloc(50 * sizeof(char));
                             strcpy(yyval, yyvsp[-2]);
                             strcat(yyval, yyvsp[0]);
-                            strcat(yyval, "/");
+                            strcat(yyval, "/ ");
                           }
 #line 1370 "中缀转后缀.tab.c"
     break;
@@ -1373,7 +1373,7 @@ yyreduce:
 #line 55 "中缀转后缀.y"
                                  {yyval = (char*)malloc(50 * sizeof(char));
                                     strcpy(yyval, yyvsp[0]);
-                                    strcat(yyval, "-");
+                                    strcat(yyval, "- ");
                                  }
 #line 1379 "中缀转后缀.tab.c"
     break;
@@ -1653,34 +1653,21 @@ int yylex()
             ungetc(t, stdin);
             return NUMBER;
         }
-        /*
-        else if((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || t == '_'){
+        else if (( t >= 'a' && t <= 'z') || ( t >= 'A' && t <= 'Z') || ( t == '_'))
+        {
             int ti = 0;
-            whlie((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_') || (t >= '0' && t <= '9'))
-            {
-                idStr[ti] = t;
-                ti++;
-                t = getchar();
-            }
-            idStr[ti]= '\0';
-            yylval = idStr;
-            ungetc(t, stdin);
-            return id;
+            while (( t >= 'a' && t <= 'z') || ( t >= 'A' && t <= 'Z') || ( t == '_')
+            || (t >= '0' && t <='9'))
+             {
+                 idStr[ti] = t;
+                 ti++;
+                 t = getchar();
+             }
+             idStr[ti] = '\0';
+             yylval = idStr;
+             ungetc(t, stdin);
+             return id;
         }
-        */
-        else if((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_')){
-            int ti = 0;
-            while((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_') || (t >= '0' || t <= '9')){
-                idStr[ti] = t;
-                ti++;
-                t = getchar();
-            }
-            idStr[ti] = '\0';
-            yylval = idStr;
-            ungetc(t, stdin);
-            return id;
-        }
-        
         else if(t == '+'){
 			return add;
 		}

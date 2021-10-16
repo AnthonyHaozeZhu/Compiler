@@ -52,7 +52,7 @@ extern int yydebug;
     add = 258,
     sub = 259,
     mul = 260,
-    div = 261,
+    DIV = 261,
     l_bracket = 262,
     r_barcket = 263,
     NUMBER = 264,
