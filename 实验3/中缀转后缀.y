@@ -103,19 +103,21 @@ int yylex()
             return id;
         }
         */
-        else if((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_')){
+        else if (( t >= 'a' && t <= 'z') || ( t >= 'A' && t <= 'Z') || ( t == '_'))
+        {
             int ti = 0;
-            while((t >= 'a' && t <= 'z') || (t >= 'A' && t <= 'Z') || (t == '_') || (t >= '0' || t <= '9')){
-                idStr[ti] = t;
-                ti++;
-                t = getchar();
-            }
-            idStr[ti] = '\0';
-            yylval = idStr;
-            ungetc(t, stdin);
-            return id;
+            while (( t >= 'a' && t <= 'z') || ( t >= 'A' && t <= 'Z') || ( t == '_')
+            || (t >= '0' && t <='9'))
+             {
+                 idStr[ti] = t;
+                 ti++;
+                 t = getchar();
+             }
+             idStr[ti] = '\0';
+             yylval = idStr;
+             ungetc(t, stdin);
+             return id;
         }
-        
         else if(t == '+'){
 			return add;
 		}
