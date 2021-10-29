@@ -29,10 +29,15 @@
     #endif
 %}
 
+HEX (0x[1-9|A-F][0-9|A-F]*|0x0)
+OCT (0[1-7][1-7]*|00)
 DECIMIAL ([1-9][0-9]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
 WHITE [\t ]
+commentbegin "/*"
+commentelement .|\n
+commentend "*/"
 %x BLOCKCOMMENT
 
 %%
@@ -148,11 +153,46 @@ WHITE [\t ]
         return ASSIGN;
     #endif
 }
+"==" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("EQUAL\t==");
+    #else
+        return EQUAL;
+    #endif
+}
+"!=" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("UNEQUAL\t!=");
+    #else
+        return UNEQUAL;
+    #endif
+}
+"!" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("AGAINST\t!");
+    #else
+        return AGAINST;
+    #endif
+}
+"*" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("STAR\t*");
+    #else
+        return STAR;
+    #endif
+}
 "<" {
     #ifdef ONLY_FOR_LEX
         DEBUG_FOR_LAB4("LESS\t<");
     #else
         return LESS;
+    #endif
+}
+">" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("MORE\t>");
+    #else
+        return MORE;
     #endif
 }
 "+" {
@@ -225,7 +265,40 @@ WHITE [\t ]
         return RBRACE;
     #endif
 }
+"[" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("LSQUARE\t[");
+    #else
+        return LSQUARE;
+    #endif
+}
+"]" {
+    #ifdef ONLY_FOR_LEX
+        DEBUG_FOR_LAB4("RSQUARE\t]");
+    #else
+        return RSQUARE;
+    #endif
+}
+{ID} {
+    #ifdef ONLY_FOR_LEX
+        string a = yytext;
+        string temp = "ID\t" + a;
+        DEBUG_FOR_LAB4(temp);
+    #else 
+        return ID;
+    #endif
+}
 
+{DECIMIAL} {
+    #ifdef ONLY_FOR_LEX
+        string a = yytext;
+        string temp = "DECIMIAL\t" + a;
+        DEBUG_FOR_LAB4(temp);
+        std::cout << yylineno << std::endl;
+    #else 
+        return DECIMIAL;
+    #endif
+}
 
 {EOL} yylineno++;
 {WHITE}
@@ -247,7 +320,6 @@ int main(int argc, char **argv){
         fprintf(stderr, "No such file or directory: %s", argv[3]);
         exit(EXIT_FAILURE);
     }
-
     yylex();
     return 0;
 }
