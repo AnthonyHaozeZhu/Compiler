@@ -19,6 +19,7 @@
     #include <ostream>
     #include <fstream>
     #include <iostream>
+    #include <math.h>
     using namespace std;
     extern FILE *yyin; 
     extern FILE *yyout;
@@ -29,17 +30,22 @@
     }
     #endif
 %}
+%{
 
-HEX (0x[1-9|A-F][0-9|A-F]*|0x0)
-OCT (0[1-7][1-7]*|00)
+%}
+
+HEX (0x[1-9|A-F|a-f][0-9|A-F|a-f]*|0x0)
+OCT (0[1-7][0-7]*|00)
 DECIMIAL ([1-9][0-9]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
+char ('.')
 EOL (\r\n|\n|\r)
 WHITE [\t ]
 linecomment (\/\/.*|\/\/.*)
-commentbegin (\/\*[\n]|\/\*)
-commentelement .*
-commentend ([\t]*\*\/|[\n][\t]*\*\/)
+commentbegin "/*"
+commentelement .|\n
+commentend "*/"
+
 %x BLOCKCOMMENT
 
 %%
@@ -62,6 +68,7 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
 
         while(a.find('\n') != a.npos)
         {
+            yylineno++;
             a.replace(a.find('\n'),1,"");
         }
         string temp = "commentbegin\t/*\tlinenum:" + to_string(yylineno);
@@ -91,9 +98,9 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
 <BLOCKCOMMENT>{commentelement} {
     #ifdef ONLY_FOR_LEX
         string a = yytext;
-        yylineno++;
         if(a.find('\n') != a.npos)
         {
+            yylineno++;
             a.replace(a.find('\n'),1,"");
         }
         string temp = "commentelement\t" + a + "\tlinenum:" + to_string(yylineno);
@@ -102,8 +109,6 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         return commentelement;
     #endif
 }
-
-
 
 "int" {
     /*
@@ -184,7 +189,7 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
 }
 "namespace" {
     #ifdef ONLY_FOR_LEX
-        string temp = "NAMESPACE\namespace\tlinenum:" + to_string(yylineno);
+        string temp = "NAMESPACE\tnamespace\tlinenum:" + to_string(yylineno);
         DEBUG_FOR_LAB4(temp);
     #else
         return namespace;
@@ -263,6 +268,22 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         return STAR;
     #endif
 }
+">=" {
+    #ifdef ONLY_FOR_LEX
+        string temp = "GTE\t>=\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return GTE;
+    #endif
+}
+"<=" {
+    #ifdef ONLY_FOR_LEX
+        string temp = "LTE\t<=\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return LTE;
+    #endif
+}
 "<" {
     #ifdef ONLY_FOR_LEX
         string temp = "LESS\t<\tlinenum:" + to_string(yylineno);
@@ -279,6 +300,30 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         return MORE;
     #endif
 }
+"," {
+    #ifdef ONLY_FOR_LEX
+        string temp = "COMMA\t,\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return COMMA;
+    #endif
+}
+":" {
+    #ifdef ONLY_FOR_LEX
+        string temp = "COLON\t:\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return COLON;
+    #endif
+}
+"'" {
+    #ifdef ONLY_FOR_LEX
+        string temp = "QUOTATION\t'\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return QUOTATION;
+    #endif
+}
 "+" {
     #ifdef ONLY_FOR_LEX
         string temp = "ADD\t+\tlinenum:" + to_string(yylineno);
@@ -293,14 +338,6 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         DEBUG_FOR_LAB4(temp);
     #else
         return SUB;
-    #endif
-}
-"*" {
-    #ifdef ONLY_FOR_LEX
-        string temp = "MUL\t*\tlinenum:" + to_string(yylineno);
-        DEBUG_FOR_LAB4(temp);
-    #else
-        return MUL;
     #endif
 }
 "/" {
@@ -375,6 +412,14 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         return RSQUARE;
     #endif
 }
+"#" {
+    #ifdef ONLY_FOR_LEX
+        string temp = "POUND\t#\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else
+        return POUND;
+    #endif
+}
 {ID} {
     #ifdef ONLY_FOR_LEX
         string a = yytext;
@@ -385,6 +430,25 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
     #endif
 }
 
+{OCT} {
+    #ifdef ONLY_FOR_LEX
+        string a  = yytext;
+        int len = a.length() - 1;
+        int all = 0;
+        for(int i = 0; i < len; i++)
+        {
+            //cout << i << ":" << (pow(8, (len - i - 1))) << ' ' << (a[i + 1] - '0') << endl;
+            int temp1 = (pow(8, (len - i - 1)));
+            int temp2 = (a[i + 1] - '0');
+            all = all + temp1 * temp2;         
+        }
+        string temp = "OCT\t" + to_string(all) + "(DEC)" + "\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else 
+        return OCT;
+    #endif
+} 
+
 {DECIMIAL} {
     #ifdef ONLY_FOR_LEX
         string a = yytext;
@@ -392,6 +456,43 @@ commentend ([\t]*\*\/|[\n][\t]*\*\/)
         DEBUG_FOR_LAB4(temp);
     #else 
         return DECIMIAL;
+    #endif
+}
+
+{HEX} {
+    #ifdef ONLY_FOR_LEX
+        string a  = yytext;
+        int len = a.length() - 2;
+        int all = 0;
+        for(int i = 0; i < len; i++)
+        {
+            int temp1 = (pow(16, (len - i - 1)));
+            int temp2;
+            if(a[i + 2] >= '0' && a[i + 2] <= '9'){
+                temp2 = (a[i + 2] - '0');
+            }
+            else if(a[i + 2] >= 'A' && a[i + 2] <= 'F'){
+                temp2 = a[i + 2] - 'A' + 10;
+            }
+            else if(a[i + 2] >= 'a' && a[i + 2] <= 'f'){
+                temp2 = a[i + 2] - 'a' + 10;
+            }
+            all = all + temp1 * temp2;         
+        }
+        string temp = "HEX\t" + to_string(all) + "(DEC)" + "\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else 
+        return HEX;
+    #endif
+}
+
+{char} {
+    #ifdef ONLY_FOR_LEX
+        string a = yytext;
+        string temp = "CHARACTER\t" + a + "\tlinenum:" + to_string(yylineno);
+        DEBUG_FOR_LAB4(temp);
+    #else 
+        return CHARACTER;
     #endif
 }
 
