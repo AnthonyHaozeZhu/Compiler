@@ -14,7 +14,7 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
     #include <string>
-
+    #include <vector>
     #ifdef ONLY_FOR_LEX
     #include <ostream>
     #include <fstream>
@@ -31,9 +31,21 @@
     #endif
 %}
 %{
-
+    
+    class Node{
+    public:
+        string idname;
+        int scope_num;
+    };
+    int l_num = 0;
+    int r_num = 0;
+    int id_count = 0;
+    int scope_num = 0;
+    vector<int> a;
+    
+    Node table[1000];
+    
 %}
-
 HEX (0x[1-9|A-F|a-f][0-9|A-F|a-f]*|0x0)
 OCT (0[1-7][0-7]*|00)
 DECIMIAL ([1-9][0-9]*|0)
@@ -93,7 +105,6 @@ commentend "*/"
         return commentend;
     #endif
 }
-
 
 <BLOCKCOMMENT>{commentelement} {
     #ifdef ONLY_FOR_LEX
@@ -382,6 +393,10 @@ commentend "*/"
 }
 "{" {
     #ifdef ONLY_FOR_LEX
+        scope_num++;
+        a.push_back(scope_num);
+        //cout << "{" << a.back() << endl;
+        l_num++;
         string temp = "LBRACE\t{\tlinenum:" + to_string(yylineno);
         DEBUG_FOR_LAB4(temp);
     #else
@@ -390,6 +405,9 @@ commentend "*/"
 }
 "}" {
     #ifdef ONLY_FOR_LEX
+        a.pop_back();
+        //cout << "}" << a.back() << endl;
+        r_num++;
         string temp = "RBRACE\t}\tlinenum:" + to_string(yylineno);
         DEBUG_FOR_LAB4(temp);
     #else
@@ -422,8 +440,29 @@ commentend "*/"
 }
 {ID} {
     #ifdef ONLY_FOR_LEX
-        string a = yytext;
-        string temp = "ID\t" + a + "\tlinenum:" + to_string(yylineno);;
+        string m = yytext;
+        //cout << yytext << ":" << a.size() << endl;
+        int idnum = 0;
+        bool flag = 0;
+        for(int i = 0; i < id_count; i++)
+        {
+            if(table[i].idname == yytext && table[i].scope_num == a.back())
+            {
+                idnum = i + 1;
+                flag = 1;
+                break;
+            }
+        }
+        if(flag == 0)
+        {
+            table[id_count].idname = yytext;
+            if(a.size() != 0){
+                table[id_count].scope_num = a.back();
+            }
+            id_count++;
+            idnum = id_count;
+        }
+        string temp = "ID\t" + m + "\tlinenum:" + to_string(yylineno) + "\tIDcount:" + to_string(idnum);
         DEBUG_FOR_LAB4(temp);
     #else 
         return ID;
