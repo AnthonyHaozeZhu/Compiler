@@ -29,7 +29,8 @@
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
-%token linecomment commentbegin commentelement commentend
+%token WHILE
+%token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
@@ -184,6 +185,16 @@ DeclStmt
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new DeclStmt(new Id(se));
+        delete []$2;
+    }
+    ;
+    |
+    Type ID ASSIGN Exp SEMICOLON{
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers -> install($2, se);
+        $$ = new DeclStmt(new Id(se));
+        $$ = new AssignStmt(new Id(se), $4);
         delete []$2;
     }
     ;

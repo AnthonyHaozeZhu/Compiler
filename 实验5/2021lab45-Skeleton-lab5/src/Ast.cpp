@@ -120,3 +120,10 @@ void FunctionDef::output(int level)
             name.c_str(), type.c_str());
     stmt->output(level + 4);
 }
+
+void WhileStmt::output(int level)
+{
+    fprintf(yyout, "%*cWhileStmt\n", level, ' ');
+    cond -> output(level + 4);
+    loopStmt -> output(level + 4);
+}

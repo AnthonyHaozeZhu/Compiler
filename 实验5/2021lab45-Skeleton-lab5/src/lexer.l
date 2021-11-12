@@ -23,27 +23,22 @@ ID [[:alpha:]_][[:alpha:][:digit:]_]*
 char ('.')
 EOL (\r\n|\n|\r)
 WHITE [\t ]
-linecomment (\/\/.*|\/\/.*)
-commentbegin "/*"
-commentelement .|\n
-commentend "*/"
+
+LINECOMMENT \/\/[^\n]*
+COMMENTBEIGN "/*"
+COMMENTELEMENT .
+COMMENTLINE (\r\n|\n|\r)
+COMMENTEND "*/"
 %x BLOCKCOMMENT
 
 %%
 
-{linecomment} {}
+{LINECOMMENT}
 
-{commentbegin} {
-    BEGIN BLOCKCOMMENT;
-}
-
-<BLOCKCOMMENT>{commentend} {
-    BEGIN INITIAL;
-}
-
-<BLOCKCOMMENT>{commentelement} {
-    yylineno++;
-}
+{COMMENTBEIGN} {BEGIN BLOCKCOMMENT;}
+<BLOCKCOMMENT>{COMMENTELEMENT} {}
+<BLOCKCOMMENT>{COMMENTLINE} {yylineno++;}
+<BLOCKCOMMENT>{COMMENTEND} {BEGIN INITIAL;}
 
 "int" {
     /*
@@ -74,6 +69,12 @@ commentend "*/"
     if(dump_tokens)
         DEBUG_FOR_LAB4("RETURN\treturn");
     return RETURN;
+}
+
+"while" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("WHILE\twhile");
+    return WHILE;
 }
 
 "=" {

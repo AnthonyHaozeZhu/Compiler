@@ -129,6 +129,16 @@ public:
     void output(int level);
 };
 
+class WhileStmt : public StmtNode
+{
+private:
+    ExprNode *cond;
+    StmtNode *loopStmt;
+public:
+    WhileStmt(ExprNode *cond, StmtNode *loopStmt) : cond(cond), loopStmt(loopStmt){};
+    void output(int level);
+};
+
 class Ast
 {
 private:
