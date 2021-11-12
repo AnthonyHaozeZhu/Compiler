@@ -20,11 +20,30 @@
 
 DECIMIAL ([1-9][0-9]*|0)
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
+char ('.')
 EOL (\r\n|\n|\r)
 WHITE [\t ]
+linecomment (\/\/.*|\/\/.*)
+commentbegin "/*"
+commentelement .|\n
+commentend "*/"
 %x BLOCKCOMMENT
 
 %%
+
+{linecomment} {}
+
+{commentbegin} {
+    BEGIN BLOCKCOMMENT;
+}
+
+<BLOCKCOMMENT>{commentend} {
+    BEGIN INITIAL;
+}
+
+<BLOCKCOMMENT>{commentelement} {
+    yylineno++;
+}
 
 "int" {
     /*

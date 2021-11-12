@@ -29,6 +29,7 @@
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
+%token linecomment commentbegin commentelement commentend
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
 %nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
@@ -37,6 +38,9 @@
 %precedence THEN
 %precedence ELSE
 %%
+
+
+
 Program
     : Stmts {
         ast.setRoot($1);
