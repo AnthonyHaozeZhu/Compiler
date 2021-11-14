@@ -53,6 +53,12 @@ void BinaryExpr::output(int level)
         case NOEQUAL:
             op_str = "noequal";
             break;
+        case DIV:
+            op_str = "div";
+            break;
+        case MUL:
+            op_str = "mul";
+            break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr1->output(level + 4);

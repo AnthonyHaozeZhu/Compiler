@@ -29,12 +29,12 @@
 %token INT VOID CHAR
 %token CONST 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA
-%token ADD SUB MORE OR AND LESS ASSIGN EQUAL NOEQUAL LESSEQUAL MOREEQUAL
+%token ADD SUB MUL DIV MORE OR AND LESS ASSIGN EQUAL NOEQUAL LESSEQUAL MOREEQUAL
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt 
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
+%nterm <exprtype> Exp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
 
 %precedence THEN
@@ -151,18 +151,34 @@ PrimaryExp
     ;
 AddExp
     :
-    PrimaryExp {$$ = $1;}
+    MulExp {$$ = $1;}
     |
-    AddExp ADD PrimaryExp
+    AddExp ADD MulExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
     }
     |
-    AddExp SUB PrimaryExp
+    AddExp SUB MulExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+    }
+    ;
+MulExp
+    :
+    PrimaryExp {$$ = $1;}
+    |
+    MulExp MUL PrimaryExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3);
+    }
+    |
+    MulExp DIV PrimaryExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
     }
     ;
 RelExp

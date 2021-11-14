@@ -127,6 +127,21 @@ COMMENTEND "*/"
         DEBUG_FOR_LAB4("ADD\t+");
     return ADD;
 }
+"-" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("SUB\t-");
+    return SUB;
+}
+"*" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("MUL\t*");
+    return MUL;
+}
+"/" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("DIV\t/");
+    return DIV;
+}
 ";" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("SEMICOLON\t;");
