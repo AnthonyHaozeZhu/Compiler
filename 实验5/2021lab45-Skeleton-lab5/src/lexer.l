@@ -122,6 +122,11 @@ COMMENTEND "*/"
         DEBUG_FOR_LAB4("MORE\t>");
     return MORE;
 }
+"!" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("EXCLAMATION\t!");
+    return EXCLAMATION;
+}
 "+" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("ADD\t+");
@@ -146,6 +151,16 @@ COMMENTEND "*/"
     if(dump_tokens)
         DEBUG_FOR_LAB4("SEMICOLON\t;");
     return SEMICOLON;
+}
+"&&" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("AND\t&&");
+    return AND;
+}
+"||" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("OR\t||");
+    return AND;
 }
 "(" {
     if(dump_tokens)

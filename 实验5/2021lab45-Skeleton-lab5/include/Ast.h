@@ -35,6 +35,17 @@ public:
     void output(int level);
 };
 
+class SignleExpr : public ExprNode 
+{
+private:
+    int op;
+    ExprNode *expr;
+public:
+    enum {SUB, ADD, EXCLAMATION};
+    SignleExpr(SymbolEntry *se, int op, ExprNode*expr) : ExprNode(se), op(op), expr(expr){};
+    void output(int level);
+};
+
 class Constant : public ExprNode
 {
 public:

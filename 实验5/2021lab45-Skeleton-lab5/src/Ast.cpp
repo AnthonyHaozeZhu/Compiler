@@ -65,6 +65,26 @@ void BinaryExpr::output(int level)
     expr2->output(level + 4);
 }
 
+void SignleExpr::output(int level)
+{
+    std::string op_str;
+    switch(op)
+    {
+        case SUB:
+            op_str = "negative";
+            break;
+        case ADD:
+            op_str = "positive";
+            break;
+        case EXCLAMATION:
+            op_str = "anti";
+            break;
+    }
+    fprintf(yyout, "%*cSignleExpr\top: %s\n", level, ' ', op_str.c_str());
+    expr->output(level + 4);
+}
+
+
 void Constant::output(int level)
 {
     std::string type, value;
