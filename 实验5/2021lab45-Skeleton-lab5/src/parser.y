@@ -148,6 +148,21 @@ PrimaryExp
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se);
     }
+    |
+    LPAREN Exp RPAREN{$$ = $2;}
+    |
+    ID LPAREN RPAREN{
+        SymbolEntry *se;
+        se = identifiers->lookup($1);
+        if(se == nullptr)
+        {
+            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+            delete [](char*)$1;
+            assert(se != nullptr);
+        }
+        $$ = new FunctionCall(se);
+        delete []$1;
+    }
     ;
 UnaryExp
     :

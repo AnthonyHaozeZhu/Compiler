@@ -168,6 +168,12 @@ public:
 };
 
 
+class FunctionCall : public ExprNode
+{
+public:
+    FunctionCall(SymbolEntry*se) : ExprNode(se){};
+    void output(int level);
+};
 
 class Ast
 {

@@ -1,4 +1,8 @@
-int a;
+int aba;
+int b()
+{
+    int c = 1;
+}
 
 int main()
 {
@@ -31,8 +35,8 @@ int main()
     {
         return 1;
     }
-    a = 1 * 2;
+    int a = 1 * (2 + 3);
     a = 3 / 4;
     a = 5 - 6;
-    a = 1 + 2 * 3;
+    return b();
 }

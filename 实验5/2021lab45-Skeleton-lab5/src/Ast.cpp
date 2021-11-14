@@ -168,6 +168,15 @@ void FunctionDef::output(int level)
     stmt->output(level + 4);
 }
 
+void FunctionCall::output(int level)
+{
+    std::string name, type;
+    name = symbolEntry->toStr();
+    type = symbolEntry->getType()->toStr();
+    fprintf(yyout, "%*cFunc\tname: %s\ttype: %s\n", level, ' ',
+            name.c_str(), type.c_str());
+}
+
 void WhileStmt::output(int level)
 {
     fprintf(yyout, "%*cWhileStmt\n", level, ' ');
