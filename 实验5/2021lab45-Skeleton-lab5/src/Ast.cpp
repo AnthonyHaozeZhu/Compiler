@@ -83,6 +83,12 @@ void DeclStmt::output(int level)
     id->output(level + 4);
 }
 
+// void ConstDeclStmt::output(int level)
+// {
+//     fprintf(yyout, "%*cConstDeclStmt\n", level, ' ');
+//     constant->output(level + 4);
+// }
+
 void IfStmt::output(int level)
 {
     fprintf(yyout, "%*cIfStmt\n", level, ' ');
@@ -124,6 +130,6 @@ void FunctionDef::output(int level)
 void WhileStmt::output(int level)
 {
     fprintf(yyout, "%*cWhileStmt\n", level, ' ');
-    cond -> output(level + 4);
-    loopStmt -> output(level + 4);
+    cond->output(level + 4);
+    loop->output(level + 4);
 }

@@ -5,7 +5,6 @@
 #include <map>
 
 class Type;
-
 class SymbolEntry
 {
 private:

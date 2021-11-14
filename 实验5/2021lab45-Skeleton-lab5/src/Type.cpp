@@ -3,10 +3,11 @@
 
 IntType TypeSystem::commonInt = IntType(4);
 VoidType TypeSystem::commonVoid = VoidType();
-CharType TypeSystem::commonChar = CharType(4); 
+CharType TypeSystem::commonChar = CharType(1); 
 
 Type* TypeSystem::intType = &commonInt;
 Type* TypeSystem::voidType = &commonVoid;
+Type* TypeSystem::charType = &commonChar;
 
 std::string IntType::toStr()
 {

@@ -55,6 +55,11 @@ COMMENTEND "*/"
         DEBUG_FOR_LAB4("VOID\tvoid");
     return VOID;
 }
+"char" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("CHAR\tchar");
+    return CHAR;
+}
 "if" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("IF\tif");
@@ -75,6 +80,12 @@ COMMENTEND "*/"
     if(dump_tokens)
         DEBUG_FOR_LAB4("WHILE\twhile");
     return WHILE;
+}
+
+"const" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("CONST\tconst");
+    return CONST;
 }
 
 "=" {
@@ -116,6 +127,12 @@ COMMENTEND "*/"
     if(dump_tokens)
         DEBUG_FOR_LAB4("RBRACE\t}");
     return RBRACE;
+}
+
+"," {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("COMMA\tcomma");
+    return COMMA;
 }
 
 {DECIMIAL} {

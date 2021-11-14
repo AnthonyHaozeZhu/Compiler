@@ -24,17 +24,18 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
-%token IF ELSE
-%token INT VOID
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON
+%token IF ELSE 
+%token WHILE
+%token INT VOID CHAR
+%token CONST 
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA
 %token ADD SUB OR AND LESS ASSIGN
 %token RETURN
-%token WHILE
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef
-%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp
-%nterm <type> Type
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt 
+%nterm <exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
+%nterm <type> Type 
 
 %precedence THEN
 %precedence ELSE
@@ -60,6 +61,7 @@ Stmt
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
+    | WhileStmt {$$ = $1;}
     ;
 LVal
     : ID {
@@ -75,6 +77,24 @@ LVal
         delete []$1;
     }
     ;
+// Idlist
+//     :
+//     ID {
+//         $$ = $1;
+//     } 
+//     |
+//     ID COMMA Idlist{
+//         SymbolEntry *se;
+//         se = identifier -> lookup($1);
+//         if(se == nullptr){
+//             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
+//             delete [](char*)$1;
+//             assert(se != nullptr);
+//         }
+//         $$ = new Idlist(se, $1, $3);
+//         delete []$1;
+//     }
+//     ;
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
@@ -98,6 +118,11 @@ IfStmt
     }
     | IF LPAREN Cond RPAREN Stmt ELSE Stmt {
         $$ = new IfElseStmt($3, $5, $7);
+    }
+    ;
+WhileStmt
+    : WHILE LPAREN Cond RPAREN Stmt {
+        $$ = new WhileStmt($3, $5);
     }
     ;
 ReturnStmt
@@ -177,6 +202,9 @@ Type
     | VOID {
         $$ = TypeSystem::voidType;
     }
+    | CHAR{
+        $$ = TypeSystem::charType;
+    }
     ;
 DeclStmt
     :
@@ -187,7 +215,6 @@ DeclStmt
         $$ = new DeclStmt(new Id(se));
         delete []$2;
     }
-    ;
     |
     Type ID ASSIGN Exp SEMICOLON{
         SymbolEntry *se;
@@ -197,7 +224,26 @@ DeclStmt
         $$ = new AssignStmt(new Id(se), $4);
         delete []$2;
     }
+    // |
+    // Type Idlist SEMICOLON{
+    //     SymbolEntry *se;
+    //     se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+    //     identifiers->install($2, se);
+    //     $$ = new DeclStmt(new Id(se));
+    //     delete []$2;
+    // }
     ;
+// ConstDeclStmt
+//     :
+//     CONST Type ID ASSIGN INTEGER SEMICOLON{
+//         SymbolEntry *se;
+//         se = new ConstantSymbolEntry($2, $5);
+//         globals -> install($3, se);
+//         $$ = new ConstDeclStmt(new Constant(se));
+//         //$$ = new AssignStmt(new Constant(se), $5);
+//         delete []$3;
+//     }
+//     ;
 FuncDef
     :
     Type ID {

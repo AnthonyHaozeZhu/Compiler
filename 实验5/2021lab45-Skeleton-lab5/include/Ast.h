@@ -49,6 +49,14 @@ public:
     void output(int level);
 };
 
+class Idlist : public ExprNode
+{
+private:
+    ExprNode *id1, *id2;
+public:
+    Idlist(SymbolEntry *se, ExprNode *id1, ExprNode *id2) : ExprNode(se), id1(id1), id2(id2){};
+};
+
 class StmtNode : public Node
 {};
 
@@ -79,6 +87,15 @@ public:
     void output(int level);
 };
 
+// class ConstDeclStmt : public StmtNode
+// {
+// private:
+//     Constant *constant;
+// public:
+//     ConstDeclStmt(Constant *constant) : constant(constant){};
+//     void output(int level);
+// };
+
 class IfStmt : public StmtNode
 {
 private:
@@ -86,6 +103,16 @@ private:
     StmtNode *thenStmt;
 public:
     IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
+    void output(int level);
+};
+
+class WhileStmt : public StmtNode
+{
+private:
+    ExprNode *cond;
+    StmtNode *loop;
+public:
+    WhileStmt(ExprNode *cond, StmtNode *loop) : cond(cond), loop(loop) {};
     void output(int level);
 };
 
@@ -129,15 +156,7 @@ public:
     void output(int level);
 };
 
-class WhileStmt : public StmtNode
-{
-private:
-    ExprNode *cond;
-    StmtNode *loopStmt;
-public:
-    WhileStmt(ExprNode *cond, StmtNode *loopStmt) : cond(cond), loopStmt(loopStmt){};
-    void output(int level);
-};
+
 
 class Ast
 {
