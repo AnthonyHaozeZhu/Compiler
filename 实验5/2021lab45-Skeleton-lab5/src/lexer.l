@@ -87,16 +87,40 @@ COMMENTEND "*/"
         DEBUG_FOR_LAB4("CONST\tconst");
     return CONST;
 }
-
+"==" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("EQUAL\t==");
+    return EQUAL;
+}
 "=" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("ASSIGN\t=");
     return ASSIGN;
 }
+">=" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("MOREEQUAL\t>=");
+    return MOREEQUAL;
+}
+"<=" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("LESSEQUAL\t<=");
+    return LESSEQUAL;
+}
+"!=" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("NOEQUAL\t!=");
+    return NOEQUAL;
+}
 "<" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("LESS\t<");
     return LESS;
+}
+">" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("MORE\t>");
+    return MORE;
 }
 "+" {
     if(dump_tokens)

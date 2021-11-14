@@ -29,7 +29,7 @@
 %token INT VOID CHAR
 %token CONST 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA
-%token ADD SUB OR AND LESS ASSIGN
+%token ADD SUB MORE OR AND LESS ASSIGN EQUAL NOEQUAL LESSEQUAL MOREEQUAL
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
@@ -173,6 +173,36 @@ RelExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::LESS, $1, $3);
+    }
+    |
+    RelExp MORE AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::MORE, $1, $3);
+    }
+    |
+    RelExp MOREEQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::MOREEQUAL, $1, $3);
+    }
+    |
+    RelExp LESSEQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::LESSEQUAL, $1, $3);
+    }
+    |
+    RelExp EQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::EQUAL, $1, $3);
+    }
+    |
+    RelExp NOEQUAL AddExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::NOEQUAL, $1, $3);
     }
     ;
 LAndExp

@@ -30,7 +30,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS};
+    enum {ADD, SUB, AND, OR, LESS, MORE, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };
