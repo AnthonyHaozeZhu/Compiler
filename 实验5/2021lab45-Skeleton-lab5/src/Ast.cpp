@@ -59,6 +59,9 @@ void BinaryExpr::output(int level)
         case MUL:
             op_str = "mul";
             break;
+        case PERC:
+            op_str = "mod";
+            break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr1->output(level + 4);
@@ -121,14 +124,9 @@ void SeqNode::output(int level)
 void DeclStmt::output(int level)
 {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
-    id->output(level + 4);
+    ids->output(level + 4);
 }
 
-// void ConstDeclStmt::output(int level)
-// {
-//     fprintf(yyout, "%*cConstDeclStmt\n", level, ' ');
-//     constant->output(level + 4);
-// }
 
 void IfStmt::output(int level)
 {
@@ -182,4 +180,17 @@ void WhileStmt::output(int level)
     fprintf(yyout, "%*cWhileStmt\n", level, ' ');
     cond->output(level + 4);
     loop->output(level + 4);
+}
+
+void IdList::output(int level)
+{
+    fprintf(yyout, "%*cIdList\n", level, ' ');
+    for(long unsigned int i = 0; i < Ids.size(); i++)
+    {
+        Ids[i] -> output(level + 4);
+    }
+    for(long unsigned int i = 0; i < Assigns.size(); i++)
+    {
+        Assigns[i] -> output(level + 4);
+    }
 }

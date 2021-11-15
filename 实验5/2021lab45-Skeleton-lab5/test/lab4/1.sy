@@ -1,7 +1,9 @@
 int a;
-
 int main()
 {
+    if(!a){
+        int z;
+    }
     int a;
     a = 1 + 2;
     if(a < 5)

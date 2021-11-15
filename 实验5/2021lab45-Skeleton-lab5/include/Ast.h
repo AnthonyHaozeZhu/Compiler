@@ -2,6 +2,7 @@
 #define __AST_H__
 
 #include <fstream>
+#include <vector>
 
 class SymbolEntry;
 
@@ -30,7 +31,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS, MORE, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL, MUL, DIV};
+    enum {ADD, SUB, AND, OR, LESS, MORE, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL, MUL, DIV, PERC};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
     void output(int level);
 };
@@ -60,16 +61,22 @@ public:
     void output(int level);
 };
 
-class Idlist : public ExprNode
-{
-private:
-    ExprNode *id1, *id2;
-public:
-    Idlist(SymbolEntry *se, ExprNode *id1, ExprNode *id2) : ExprNode(se), id1(id1), id2(id2){};
-};
+class ListNode : public Node
+{};
+
 
 class StmtNode : public Node
 {};
+
+class AssignStmt : public StmtNode
+{
+private:
+    ExprNode *lval;
+    ExprNode *expr;
+public:
+    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
+    void output(int level);
+};
 
 class CompoundStmt : public StmtNode
 {
@@ -89,23 +96,24 @@ public:
     void output(int level);
 };
 
-class DeclStmt : public StmtNode
+class IdList : public ListNode
 {
-private:
-    Id *id;
 public:
-    DeclStmt(Id *id) : id(id){};
+    std::vector<Id*> Ids;
+    std::vector<AssignStmt*> Assigns;
+    IdList(std::vector<Id*> Ids, std::vector<AssignStmt*> Assigns) : Ids(Ids), Assigns(Assigns) {};
     void output(int level);
 };
 
-// class ConstDeclStmt : public StmtNode
-// {
-// private:
-//     Constant *constant;
-// public:
-//     ConstDeclStmt(Constant *constant) : constant(constant){};
-//     void output(int level);
-// };
+class DeclStmt : public StmtNode
+{
+private:
+    IdList *ids;
+public:
+    DeclStmt(IdList *ids) : ids(ids){};
+    void output(int level);
+};
+
 
 class IfStmt : public StmtNode
 {
@@ -147,15 +155,7 @@ public:
     void output(int level);
 };
 
-class AssignStmt : public StmtNode
-{
-private:
-    ExprNode *lval;
-    ExprNode *expr;
-public:
-    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
-    void output(int level);
-};
+
 
 class FunctionDef : public StmtNode
 {

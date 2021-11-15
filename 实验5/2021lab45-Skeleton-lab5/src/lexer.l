@@ -147,6 +147,11 @@ COMMENTEND "*/"
         DEBUG_FOR_LAB4("DIV\t/");
     return DIV;
 }
+"%" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("PERC\t%");
+    return PERC;
+}
 ";" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("SEMICOLON\t;");

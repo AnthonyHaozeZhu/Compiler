@@ -19,6 +19,7 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
+    IdList* listtype;
 }
 
 %start Program
@@ -29,13 +30,14 @@
 %token INT VOID CHAR
 %token CONST 
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON COMMA
-%token ADD SUB MUL DIV EXCLAMATION MORE OR AND LESS ASSIGN EQUAL NOEQUAL LESSEQUAL MOREEQUAL
+%token ADD SUB MUL DIV EXCLAMATION MORE OR AND LESS ASSIGN EQUAL NOEQUAL LESSEQUAL MOREEQUAL PERC
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt 
 %nterm <exprtype> Exp UnaryExp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
+%nterm <listtype> Idlist
 
 %precedence THEN
 %precedence ELSE
@@ -71,30 +73,12 @@ LVal
         {
             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
             delete [](char*)$1;
-            assert(se != nullptr);
+            //assert(se != nullptr);
         }
         $$ = new Id(se);
         delete []$1;
     }
     ;
-// Idlist
-//     :
-//     ID {
-//         $$ = $1;
-//     } 
-//     |
-//     ID COMMA Idlist{
-//         SymbolEntry *se;
-//         se = identifier -> lookup($1);
-//         if(se == nullptr){
-//             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
-//             delete [](char*)$1;
-//             assert(se != nullptr);
-//         }
-//         $$ = new Idlist(se, $1, $3);
-//         delete []$1;
-//     }
-//     ;
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
@@ -158,7 +142,7 @@ PrimaryExp
         {
             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
             delete [](char*)$1;
-            assert(se != nullptr);
+            //assert(se != nullptr);
         }
         $$ = new FunctionCall(se);
         delete []$1;
@@ -213,6 +197,12 @@ MulExp
     {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3);
+    }
+    |
+    MulExp PERC UnaryExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::PERC, $1, $3);
     }
     ;
 RelExp
@@ -288,42 +278,60 @@ Type
     ;
 DeclStmt
     :
-    Type ID SEMICOLON {
+    Type Idlist SEMICOLON {
+        $$ = new DeclStmt($2);
+    }
+    ;
+Idlist
+    :
+    ID {
+        std::vector<Id*> Ids;
+        std::vector<AssignStmt*> Assigns;
+        IdList *temp = new IdList(Ids, Assigns);
         SymbolEntry *se;
-        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
-        identifiers->install($2, se);
-        $$ = new DeclStmt(new Id(se));
-        delete []$2;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        temp -> Ids.push_back(new Id(se));
+        $$ = temp;
+        delete []$1;
+    } 
+    |
+    Idlist COMMA ID{
+        IdList *temp = $1;
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $3, identifiers->getLevel());
+        identifiers->install($3, se);
+        temp -> Ids.push_back(new Id(se));
+        $$ = temp;
+        delete []$3;
     }
     |
-    Type ID ASSIGN Exp SEMICOLON{
+    ID ASSIGN Exp {
+        std::vector<Id*> Ids;
+        std::vector<AssignStmt*> Assigns;
+        IdList *temp = new IdList(Ids, Assigns);
         SymbolEntry *se;
-        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
-        identifiers -> install($2, se);
-        $$ = new DeclStmt(new Id(se));
-        $$ = new AssignStmt(new Id(se), $4);
-        delete []$2;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        Id *t = new Id(se);
+        temp -> Ids.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $3));
+        $$ = temp;
+        delete []$1;
     }
-    // |
-    // Type Idlist SEMICOLON{
-    //     SymbolEntry *se;
-    //     se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
-    //     identifiers->install($2, se);
-    //     $$ = new DeclStmt(new Id(se));
-    //     delete []$2;
-    // }
+    |
+    Idlist COMMA ID ASSIGN Exp {
+        IdList *temp = $1;
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $3, identifiers->getLevel());
+        identifiers->install($3, se);
+        Id *t = new Id(se);
+        temp -> Ids.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $5));
+        $$ = temp;
+        delete []$3;
+    }
     ;
-// ConstDeclStmt
-//     :
-//     CONST Type ID ASSIGN INTEGER SEMICOLON{
-//         SymbolEntry *se;
-//         se = new ConstantSymbolEntry($2, $5);
-//         globals -> install($3, se);
-//         $$ = new ConstDeclStmt(new Constant(se));
-//         //$$ = new AssignStmt(new Constant(se), $5);
-//         delete []$3;
-//     }
-//     ;
 FuncDef
     :
     Type ID {
