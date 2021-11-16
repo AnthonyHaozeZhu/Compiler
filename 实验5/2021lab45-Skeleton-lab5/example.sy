@@ -5,5 +5,8 @@ k + 1;
 int m()
 {
     int b = 1;
+    return b;
 }
-m();
+int main(){
+    m(a, 1+1);
+}

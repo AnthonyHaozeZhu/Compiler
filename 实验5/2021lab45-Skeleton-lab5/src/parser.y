@@ -23,7 +23,6 @@
     FuncFParams* Fstype;
     FuncRParams* FRtype;
     ConstIdList* CIdstype;
-    //FuncCall* Fctype;
 }
 
 %start Program
@@ -45,7 +44,6 @@
 %nterm <Fstype> FuncFParams
 %nterm <FRtype> FuncRParams
 %nterm <CIdstype> ConstIdList
-//%nterm <Fctype> FuncCall
 
 %precedence THEN
 %precedence ELSE
@@ -73,7 +71,6 @@ Stmt
     | ConstDeclStmt {$$ = $1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$ = $1;}
-    //| FuncCall {$$ = $1;}
     | SEMICOLON {$$ = new Empty();}
     | BREAK SEMICOLON {$$ = new BreakStmt();}
     | CONTINUE SEMICOLON {$$ = new ContinueStmt();}
@@ -85,34 +82,6 @@ SignleStmt
         $$ = new SignleStmt($1);
     }
     ;
-// FuncCall
-//     :
-//     ID LPAREN RPAREN SEMICOLON{
-//         SymbolEntry *se;
-//         se = identifiers->lookup($1);
-//         if(se == nullptr)
-//         {
-//             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
-//             delete [](char*)$1;
-//             assert(se != nullptr);
-//         }
-//         $$ = new FuncCall(new FunctionCall(se, nullptr));
-//         delete []$1;
-//     }
-//     |
-//     ID LPAREN FuncRParams RPAREN SEMICOLON{
-//         SymbolEntry *se;
-//         se = identifiers->lookup($1);
-//         if(se == nullptr)
-//         {
-//             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
-//             delete [](char*)$1;
-//             assert(se != nullptr);
-//         }
-//         $$ = new FuncCall(new FunctionCall(se, $3));
-//         delete []$1;
-//     }
-//     ;
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
