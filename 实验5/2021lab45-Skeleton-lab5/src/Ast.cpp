@@ -174,7 +174,9 @@ void FunctionDef::output(int level)
     type = se->getType()->toStr();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
-    FPs -> output(level + 4);
+    if(FPs != nullptr){
+        FPs -> output(level + 4);
+    }
     stmt->output(level + 4);
 }
 
@@ -185,6 +187,10 @@ void FunctionCall::output(int level)
     type = symbolEntry->getType()->toStr();
     fprintf(yyout, "%*cFunc\tname: %s\ttype: %s\n", level, ' ',
             name.c_str(), type.c_str());
+    if(RPs != nullptr)
+    {
+        RPs -> output(level + 4);
+    }
 }
 
 void WhileStmt::output(int level)
@@ -217,5 +223,14 @@ void FuncFParams::output(int level)
     for(long unsigned int i = 0; i < Assigns.size(); i++)
     {
         Assigns[i] -> output(level + 4);
+    }
+}
+
+void FuncRParams::output(int level)
+{
+    fprintf(yyout, "%*cFuncRParams\n", level, ' ');
+    for(long unsigned int i = 0; i < Exprs.size(); i++)
+    {
+        Exprs[i] -> output(level + 4);
     }
 }

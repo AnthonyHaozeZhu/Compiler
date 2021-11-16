@@ -112,6 +112,14 @@ public:
     void output(int level);
 };
 
+class FuncRParams : public ListNode
+{
+public:
+    std::vector<ExprNode*> Exprs;
+    FuncRParams(std::vector<ExprNode*> Exprs) : Exprs(Exprs){};
+    void output(int level);
+};
+
 class FuncFParams : public ListNode
 {
 public:
@@ -188,7 +196,8 @@ public:
 class FunctionCall : public ExprNode
 {
 public:
-    FunctionCall(SymbolEntry*se) : ExprNode(se){};
+    FuncRParams *RPs;
+    FunctionCall(SymbolEntry*se, FuncRParams *RPs) : ExprNode(se), RPs(RPs){};
     void output(int level);
 };
 

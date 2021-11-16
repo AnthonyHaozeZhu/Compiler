@@ -21,6 +21,7 @@
     Type* type;
     IdList* Idlisttype;
     FuncFParams* Fstype;
+    FuncRParams* FRtype;
 }
 
 %start Program
@@ -40,6 +41,7 @@
 %nterm <type> Type 
 %nterm <Idlisttype> Idlist 
 %nterm <Fstype> FuncFParams
+%nterm <FRtype> FuncRParams
 
 %precedence THEN
 %precedence ELSE
@@ -50,6 +52,10 @@
 Program
     : Stmts {
         ast.setRoot($1);
+        Type *funcType = new FunctionType(TypeSystem::intType,{});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, "getint", identifiers->getLevel());
+        identifiers->install("getint", se);
+        identifiers = new SymbolTable(identifiers);
     }
     ;
 Stmts
@@ -146,7 +152,20 @@ PrimaryExp
             delete [](char*)$1;
             //assert(se != nullptr);
         }
-        $$ = new FunctionCall(se);
+        $$ = new FunctionCall(se, nullptr);
+        delete []$1;
+    }
+    |
+    ID LPAREN FuncRParams RPAREN{
+        SymbolEntry *se;
+        se = identifiers->lookup($1);
+        if(se == nullptr)
+        {
+            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+            delete [](char*)$1;
+            //assert(se != nullptr);
+        }
+        $$ = new FunctionCall(se, $3);
         delete []$1;
     }
     ;
@@ -332,6 +351,23 @@ Idlist
         temp -> Assigns.push_back(new AssignStmt(t, $5));
         $$ = temp;
         delete []$3;
+    }
+    ;
+FuncRParams
+    :
+    Exp
+    {
+        std::vector<ExprNode*> t;
+        t.push_back($1);
+        FuncRParams *temp = new FuncRParams(t);
+        $$ = temp;
+    }
+    |
+    FuncRParams COMMA Exp
+    {
+        FuncRParams *temp = $1;
+        temp -> Exprs.push_back($3);
+        $$ = temp;
     }
     ;
 FuncFParams

@@ -1,6 +1,7 @@
 #include "SymbolTable.h"
 #include <iostream>
 #include <sstream>
+#include "Type.h"
 
 SymbolEntry::SymbolEntry(Type *type, int kind) 
 {
