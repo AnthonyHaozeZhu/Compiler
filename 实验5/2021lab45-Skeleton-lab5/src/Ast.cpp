@@ -211,18 +211,12 @@ void FunctionCall::output(int level)
     std::string name, type;
     name = symbolEntry->toStr();
     type = symbolEntry->getType()->toStr();
-    fprintf(yyout, "%*cFunc\tname: %s\ttype: %s\n", level, ' ',
+    fprintf(yyout, "%*cFuncCall\tname: %s\ttype: %s\n", level, ' ',
             name.c_str(), type.c_str());
     if(RPs != nullptr)
     {
         RPs -> output(level + 4);
     }
-}
-
-void FuncCall::output(int level)
-{
-    fprintf(yyout, "%*cFuncation Call\n", level, ' ');
-    FC -> output(level + 4);
 }
 
 void WhileStmt::output(int level)
@@ -274,4 +268,15 @@ void FuncRParams::output(int level)
     {
         Exprs[i] -> output(level + 4);
     }
+}
+
+void Empty::output(int level)
+{
+    fprintf(yyout, "%*cEmpty Statement\n", level, ' ');
+}
+
+void SignleStmt::output(int level)
+{
+    fprintf(yyout, "%*cSignle Statement\n", level, ' ');
+    expr -> output(level + 4);
 }

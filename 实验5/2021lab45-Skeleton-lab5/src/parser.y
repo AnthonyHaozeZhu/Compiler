@@ -23,7 +23,7 @@
     FuncFParams* Fstype;
     FuncRParams* FRtype;
     ConstIdList* CIdstype;
-    FuncCall* Fctype;
+    //FuncCall* Fctype;
 }
 
 %start Program
@@ -38,14 +38,14 @@
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt ConstDeclStmt 
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt ConstDeclStmt SignleStmt
 %nterm <exprtype> Exp UnaryExp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
 %nterm <Idlisttype> Idlist 
 %nterm <Fstype> FuncFParams
 %nterm <FRtype> FuncRParams
 %nterm <CIdstype> ConstIdList
-%nterm <Fctype> FuncCall
+//%nterm <Fctype> FuncCall
 
 %precedence THEN
 %precedence ELSE
@@ -73,58 +73,46 @@ Stmt
     | ConstDeclStmt {$$ = $1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$ = $1;}
-    | FuncCall {$$ = $1;}
-    | 
-    BREAK SEMICOLON {
-        $$ = new BreakStmt();
-    }
-    |
-    CONTINUE SEMICOLON {
-        $$ = new ContinueStmt();
-    }
+    //| FuncCall {$$ = $1;}
+    | SEMICOLON {$$ = new Empty();}
+    | BREAK SEMICOLON {$$ = new BreakStmt();}
+    | CONTINUE SEMICOLON {$$ = new ContinueStmt();}
+    | SignleStmt {$$ = $1;}
     ;
-FuncCall
+SignleStmt
     :
-    ID LPAREN RPAREN SEMICOLON{
-        SymbolEntry *se;
-        se = identifiers->lookup($1);
-        if(se == nullptr)
-        {
-            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
-        }
-        $$ = new FuncCall(new FunctionCall(se, nullptr));
-        delete []$1;
-    }
-    |
-    ID LPAREN FuncRParams RPAREN SEMICOLON{
-        SymbolEntry *se;
-        se = identifiers->lookup($1);
-        if(se == nullptr)
-        {
-            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
-        }
-        $$ = new FuncCall(new FunctionCall(se, $3));
-        delete []$1;
+    Exp SEMICOLON{
+        $$ = new SignleStmt($1);
     }
     ;
-LVal
-    : ID {
-        SymbolEntry *se;
-        se = identifiers->lookup($1);
-        if(se == nullptr)
-        {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
-        }
-        $$ = new Id(se);
-        delete []$1;
-    }
-    ;
+// FuncCall
+//     :
+//     ID LPAREN RPAREN SEMICOLON{
+//         SymbolEntry *se;
+//         se = identifiers->lookup($1);
+//         if(se == nullptr)
+//         {
+//             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+//             delete [](char*)$1;
+//             assert(se != nullptr);
+//         }
+//         $$ = new FuncCall(new FunctionCall(se, nullptr));
+//         delete []$1;
+//     }
+//     |
+//     ID LPAREN FuncRParams RPAREN SEMICOLON{
+//         SymbolEntry *se;
+//         se = identifiers->lookup($1);
+//         if(se == nullptr)
+//         {
+//             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+//             delete [](char*)$1;
+//             assert(se != nullptr);
+//         }
+//         $$ = new FuncCall(new FunctionCall(se, $3));
+//         delete []$1;
+//     }
+//     ;
 AssignStmt
     :
     LVal ASSIGN Exp SEMICOLON {
@@ -146,6 +134,9 @@ IfStmt
     : IF LPAREN Cond RPAREN Stmt %prec THEN {
         $$ = new IfStmt($3, $5);
     }
+    | IF LPAREN Cond RPAREN LBRACE RBRACE{
+        $$ = new IfStmt($3, new Empty());
+    } 
     | IF LPAREN Cond RPAREN Stmt ELSE Stmt {
         $$ = new IfElseStmt($3, $5, $7);
     }
@@ -169,6 +160,20 @@ Cond
     :
     LOrExp {$$ = $1;}
     ;
+LVal
+    : ID {
+        SymbolEntry *se;
+        se = identifiers->lookup($1);
+        if(se == nullptr)
+        {
+            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
+            delete [](char*)$1;
+            assert(se != nullptr);
+        }
+        $$ = new Id(se);
+        delete []$1;
+    }
+    ;
 PrimaryExp
     :
     LVal {
@@ -180,6 +185,10 @@ PrimaryExp
     }
     |
     LPAREN Exp RPAREN{$$ = $2;}
+    ;
+UnaryExp
+    :
+    PrimaryExp {$$ = $1;}
     |
     ID LPAREN RPAREN{
         SymbolEntry *se;
@@ -206,10 +215,6 @@ PrimaryExp
         $$ = new FunctionCall(se, $3);
         delete []$1;
     }
-    ;
-UnaryExp
-    :
-    PrimaryExp {$$ = $1;}
     |
     SUB UnaryExp {
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
@@ -224,22 +229,6 @@ UnaryExp
     ADD UnaryExp{
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new SignleExpr(se, SignleExpr::ADD, $2);
-    }
-    ;
-AddExp
-    :
-    MulExp {$$ = $1;}
-    |
-    AddExp ADD MulExp
-    {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
-    }
-    |
-    AddExp SUB MulExp
-    {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
-        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
     }
     ;
 MulExp
@@ -263,7 +252,24 @@ MulExp
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::PERC, $1, $3);
     }
+    ;    
+AddExp
+    :
+    MulExp {$$ = $1;}
+    |
+    AddExp ADD MulExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3);
+    }
+    |
+    AddExp SUB MulExp
+    {
+        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3);
+    }
     ;
+
 RelExp
     :
     AddExp {$$ = $1;}

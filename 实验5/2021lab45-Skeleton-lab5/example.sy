@@ -1,6 +1,9 @@
-int f()
+int a;
+a = !a;
+int k;
+k + 1;
+int m()
 {
-    int a;
+    int b = 1;
 }
-
-f(1+1);
+m();

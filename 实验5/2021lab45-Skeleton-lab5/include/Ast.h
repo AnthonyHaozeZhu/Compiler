@@ -82,6 +82,21 @@ class ListNode : public Node
 class StmtNode : public Node
 {};
 
+class Empty : public StmtNode
+{
+public:
+    void output(int level);
+};
+
+class SignleStmt : public StmtNode
+{
+private:
+    ExprNode* expr;
+public:
+    SignleStmt(ExprNode* expr) : expr(expr){};
+    void output(int level);
+};
+
 class AssignStmt : public StmtNode
 {
 private:
@@ -237,15 +252,6 @@ class FunctionCall : public ExprNode
 public:
     FuncRParams *RPs;
     FunctionCall(SymbolEntry*se, FuncRParams *RPs) : ExprNode(se), RPs(RPs){};
-    void output(int level);
-};
-
-class FuncCall : public StmtNode //for signle call
-{
-private: 
-    FunctionCall *FC;
-public:
-    FuncCall(FunctionCall *FC) : FC(FC) {};
     void output(int level);
 };
 
