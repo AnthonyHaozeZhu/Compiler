@@ -61,6 +61,13 @@ public:
     void output(int level);
 };
 
+class FuncFParam : public ExprNode
+{
+public:
+    FuncFParam(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+};
+
 class ListNode : public Node
 {};
 
@@ -102,6 +109,15 @@ public:
     std::vector<Id*> Ids;
     std::vector<AssignStmt*> Assigns;
     IdList(std::vector<Id*> Ids, std::vector<AssignStmt*> Assigns) : Ids(Ids), Assigns(Assigns) {};
+    void output(int level);
+};
+
+class FuncFParams : public ListNode
+{
+public:
+    std::vector<FuncFParam*> FPs;
+    std::vector<AssignStmt*> Assigns;
+    FuncFParams(std::vector<FuncFParam*> FPs, std::vector<AssignStmt*> Assigns) : FPs(FPs), Assigns(Assigns) {};
     void output(int level);
 };
 
@@ -161,9 +177,10 @@ class FunctionDef : public StmtNode
 {
 private:
     SymbolEntry *se;
+    FuncFParams *FPs;
     StmtNode *stmt;
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+    FunctionDef(SymbolEntry *se, FuncFParams *FPs, StmtNode *stmt) : se(se), FPs(FPs), stmt(stmt){};
     void output(int level);
 };
 

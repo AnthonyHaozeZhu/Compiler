@@ -19,7 +19,8 @@
     StmtNode* stmttype;
     ExprNode* exprtype;
     Type* type;
-    IdList* listtype;
+    IdList* Idlisttype;
+    FuncFParams* Fstype;
 }
 
 %start Program
@@ -37,7 +38,8 @@
 %nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt 
 %nterm <exprtype> Exp UnaryExp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
-%nterm <listtype> Idlist
+%nterm <Idlisttype> Idlist 
+%nterm <Fstype> FuncFParams
 
 %precedence THEN
 %precedence ELSE
@@ -332,22 +334,96 @@ Idlist
         delete []$3;
     }
     ;
+FuncFParams
+    :
+    Type ID
+    {
+        std::vector<FuncFParam*> FPs;
+        std::vector<AssignStmt*> Assigns;
+        FuncFParams *temp = new FuncFParams(FPs, Assigns);
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        temp -> FPs.push_back(new FuncFParam(se));
+        $$ = temp;
+        delete []$2;
+    }
+    |
+    FuncFParams COMMA Type ID
+    {
+        FuncFParams *temp = $1;
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($3, $4, identifiers->getLevel());
+        identifiers->install($4, se);
+        temp -> FPs.push_back(new FuncFParam(se));
+        $$ = temp;
+        delete []$4;
+    }
+    |
+    Type ID ASSIGN Exp
+    {
+        std::vector<FuncFParam*> FPs;
+        std::vector<AssignStmt*> Assigns;
+        FuncFParams *temp = new FuncFParams(FPs, Assigns);
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        FuncFParam* t = new FuncFParam(se);
+        temp -> FPs.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $4));
+        $$ = temp;
+        delete []$2;
+    }
+    |
+    FuncFParams COMMA Type ID ASSIGN Exp
+    {
+        FuncFParams *temp = $1;
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry($3, $4, identifiers->getLevel());
+        identifiers->install($4, se);
+        FuncFParam* t = new FuncFParam(se);
+        temp -> FPs.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $6));
+        $$ = temp;
+        delete []$4;
+    }
+    ;
 FuncDef
     :
-    Type ID {
+    Type ID LPAREN {
         Type *funcType;
         funcType = new FunctionType($1,{});
         SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
         identifiers->install($2, se);
         identifiers = new SymbolTable(identifiers);
     }
-    LPAREN RPAREN
+    RPAREN
     BlockStmt
     {
         SymbolEntry *se;
         se = identifiers->lookup($2);
         assert(se != nullptr);
-        $$ = new FunctionDef(se, $6);
+        $$ = new FunctionDef(se, nullptr,$6);
+        SymbolTable *top = identifiers;
+        identifiers = identifiers->getPrev();
+        delete top;
+        delete []$2;
+    }
+    |
+    Type ID LPAREN {
+        Type *funcType;
+        funcType = new FunctionType($1,{});
+        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        identifiers = new SymbolTable(identifiers);
+    }
+    FuncFParams RPAREN
+    BlockStmt
+    {
+        SymbolEntry *se;
+        se = identifiers->lookup($2);
+        assert(se != nullptr);
+        $$ = new FunctionDef(se, $5 ,$7);
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         delete top;

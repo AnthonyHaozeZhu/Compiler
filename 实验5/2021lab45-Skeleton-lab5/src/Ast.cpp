@@ -108,6 +108,17 @@ void Id::output(int level)
             name.c_str(), scope, type.c_str());
 }
 
+void FuncFParam::output(int level)
+{
+    std::string name, type;
+    int scope;
+    name = symbolEntry -> toStr();
+    type = symbolEntry -> getType() -> toStr();
+    scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry) -> getScope();
+    fprintf(yyout, "%*cFuncFParam\tname:%s\tscope:%d\ttype:%s\n", level, ' ',
+            name.c_str(), scope, type.c_str());
+}
+
 void CompoundStmt::output(int level)
 {
     fprintf(yyout, "%*cCompoundStmt\n", level, ' ');
@@ -163,6 +174,7 @@ void FunctionDef::output(int level)
     type = se->getType()->toStr();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
+    FPs -> output(level + 4);
     stmt->output(level + 4);
 }
 
@@ -188,6 +200,19 @@ void IdList::output(int level)
     for(long unsigned int i = 0; i < Ids.size(); i++)
     {
         Ids[i] -> output(level + 4);
+    }
+    for(long unsigned int i = 0; i < Assigns.size(); i++)
+    {
+        Assigns[i] -> output(level + 4);
+    }
+}
+
+void FuncFParams::output(int level)
+{
+    fprintf(yyout, "%*cFuncFParams\n", level, ' ');
+    for(long unsigned int i = 0; i < FPs.size(); i++)
+    {
+        FPs[i] -> output(level + 4);
     }
     for(long unsigned int i = 0; i < Assigns.size(); i++)
     {

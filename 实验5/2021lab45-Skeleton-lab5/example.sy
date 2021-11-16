@@ -1,17 +1,9 @@
-int aba, a = 2, z;
-int b()
-{
-    a = - - z;
-    int c = 1;
-    z = a % z;
-    a = 1;
-    if (+-!!!a) {
-        a = - - -1;
-    }
-    else {
-        a = 0;
-    }
-}
-
-
 int z;
+int a(int c = 1, int b, int a)
+{
+    c = 1;
+}
+int b(int c, int d)
+{
+    c = 1;
+}
