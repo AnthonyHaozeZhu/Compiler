@@ -240,6 +240,15 @@ public:
     void output(int level);
 };
 
+class FuncCall : public StmtNode //for signle call
+{
+private: 
+    FunctionCall *FC;
+public:
+    FuncCall(FunctionCall *FC) : FC(FC) {};
+    void output(int level);
+};
+
 class Ast
 {
 private:

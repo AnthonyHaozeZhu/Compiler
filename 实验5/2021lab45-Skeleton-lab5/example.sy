@@ -1,1 +1,6 @@
-getint();
+int f()
+{
+    int a;
+}
+
+f(1+1);

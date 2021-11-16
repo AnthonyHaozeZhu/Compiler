@@ -219,6 +219,12 @@ void FunctionCall::output(int level)
     }
 }
 
+void FuncCall::output(int level)
+{
+    fprintf(yyout, "%*cFuncation Call\n", level, ' ');
+    FC -> output(level + 4);
+}
+
 void WhileStmt::output(int level)
 {
     fprintf(yyout, "%*cWhileStmt\n", level, ' ');

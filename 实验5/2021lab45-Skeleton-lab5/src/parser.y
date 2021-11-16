@@ -23,6 +23,7 @@
     FuncFParams* Fstype;
     FuncRParams* FRtype;
     ConstIdList* CIdstype;
+    FuncCall* Fctype;
 }
 
 %start Program
@@ -37,13 +38,14 @@
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt ConstDeclStmt
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt ConstDeclStmt 
 %nterm <exprtype> Exp UnaryExp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
 %nterm <Idlisttype> Idlist 
 %nterm <Fstype> FuncFParams
 %nterm <FRtype> FuncRParams
 %nterm <CIdstype> ConstIdList
+%nterm <Fctype> FuncCall
 
 %precedence THEN
 %precedence ELSE
@@ -71,6 +73,7 @@ Stmt
     | ConstDeclStmt {$$ = $1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$ = $1;}
+    | FuncCall {$$ = $1;}
     | 
     BREAK SEMICOLON {
         $$ = new BreakStmt();
@@ -78,6 +81,34 @@ Stmt
     |
     CONTINUE SEMICOLON {
         $$ = new ContinueStmt();
+    }
+    ;
+FuncCall
+    :
+    ID LPAREN RPAREN SEMICOLON{
+        SymbolEntry *se;
+        se = identifiers->lookup($1);
+        if(se == nullptr)
+        {
+            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+            delete [](char*)$1;
+            assert(se != nullptr);
+        }
+        $$ = new FuncCall(new FunctionCall(se, nullptr));
+        delete []$1;
+    }
+    |
+    ID LPAREN FuncRParams RPAREN SEMICOLON{
+        SymbolEntry *se;
+        se = identifiers->lookup($1);
+        if(se == nullptr)
+        {
+            fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
+            delete [](char*)$1;
+            assert(se != nullptr);
+        }
+        $$ = new FuncCall(new FunctionCall(se, $3));
+        delete []$1;
     }
     ;
 LVal
