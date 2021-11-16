@@ -97,6 +97,17 @@ void Constant::output(int level)
             value.c_str(), type.c_str());
 }
 
+void ConstId::output(int level)
+{
+    std::string name, type;
+    int scope;
+    name = symbolEntry->toStr();
+    type = symbolEntry->getType()->toStr();
+    scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
+    fprintf(yyout, "%*cConstId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
+            name.c_str(), scope, type.c_str());
+}
+
 void Id::output(int level)
 {
     std::string name, type;
@@ -148,6 +159,11 @@ void DeclStmt::output(int level)
     ids->output(level + 4);
 }
 
+void ConstDeclStmt::output(int level)
+{
+    fprintf(yyout, "%*cConstDeclStmt\n", level, ' ');
+    Cids->output(level + 4);
+}
 
 void IfStmt::output(int level)
 {
@@ -219,6 +235,15 @@ void IdList::output(int level)
     }
     for(long unsigned int i = 0; i < Assigns.size(); i++)
     {
+        Assigns[i] -> output(level + 4);
+    }
+}
+void ConstIdList::output(int level)
+{
+    fprintf(yyout, "%*cConstIdList\n", level, ' ');
+    for(long unsigned int i = 0; i < CIds.size(); i++)
+    {
+        CIds[i] -> output(level + 4);
         Assigns[i] -> output(level + 4);
     }
 }

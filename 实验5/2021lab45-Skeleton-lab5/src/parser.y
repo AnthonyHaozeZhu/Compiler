@@ -22,6 +22,7 @@
     IdList* Idlisttype;
     FuncFParams* Fstype;
     FuncRParams* FRtype;
+    ConstIdList* CIdstype;
 }
 
 %start Program
@@ -36,12 +37,13 @@
 %token RETURN
 %token LINECOMMENT COMMENTBEIGN COMMENTELEMENT COMMENTLINE COMMENTEND
 
-%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt 
+%nterm <stmttype> Stmts Stmt AssignStmt BlockStmt IfStmt ReturnStmt DeclStmt FuncDef WhileStmt ConstDeclStmt
 %nterm <exprtype> Exp UnaryExp AddExp MulExp Cond LOrExp PrimaryExp LVal RelExp LAndExp 
 %nterm <type> Type 
 %nterm <Idlisttype> Idlist 
 %nterm <Fstype> FuncFParams
 %nterm <FRtype> FuncRParams
+%nterm <CIdstype> ConstIdList
 
 %precedence THEN
 %precedence ELSE
@@ -52,10 +54,6 @@
 Program
     : Stmts {
         ast.setRoot($1);
-        Type *funcType = new FunctionType(TypeSystem::intType,{});
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, "getint", identifiers->getLevel());
-        identifiers->install("getint", se);
-        identifiers = new SymbolTable(identifiers);
     }
     ;
 Stmts
@@ -70,6 +68,7 @@ Stmt
     | IfStmt {$$=$1;}
     | ReturnStmt {$$=$1;}
     | DeclStmt {$$=$1;}
+    | ConstDeclStmt {$$ = $1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$ = $1;}
     | 
@@ -89,7 +88,7 @@ LVal
         {
             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
             delete [](char*)$1;
-            //assert(se != nullptr);
+            assert(se != nullptr);
         }
         $$ = new Id(se);
         delete []$1;
@@ -158,7 +157,7 @@ PrimaryExp
         {
             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
             delete [](char*)$1;
-            //assert(se != nullptr);
+            assert(se != nullptr);
         }
         $$ = new FunctionCall(se, nullptr);
         delete []$1;
@@ -171,7 +170,7 @@ PrimaryExp
         {
             fprintf(stderr, "Function \"%s\" is undefined\n", (char*)$1);
             delete [](char*)$1;
-            //assert(se != nullptr);
+            assert(se != nullptr);
         }
         $$ = new FunctionCall(se, $3);
         delete []$1;
@@ -311,6 +310,39 @@ DeclStmt
         $$ = new DeclStmt($2);
     }
     ;
+ConstDeclStmt
+    :
+    CONST Type ConstIdList SEMICOLON{
+        $$ = new ConstDeclStmt($3);
+    }
+    ;
+ConstIdList
+    :
+    ID ASSIGN Exp {
+        std::vector<ConstId*> ConstIds;
+        std::vector<AssignStmt*> Assigns;
+        ConstIdList* temp = new ConstIdList(ConstIds, Assigns);
+        SymbolEntry* se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers -> getLevel());
+        identifiers->install($1, se);
+        ConstId *t = new ConstId(se);
+        temp -> CIds.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $3));
+        $$ = temp;
+        delete []$1;
+    }
+    |
+    ConstIdList COMMA ID ASSIGN Exp {
+        ConstIdList *temp = $1;
+        SymbolEntry *se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $3, identifiers->getLevel());
+        identifiers->install($3, se);
+        ConstId *t = new ConstId(se);
+        temp -> CIds.push_back(t);
+        temp -> Assigns.push_back(new AssignStmt(t, $5));
+        $$ = temp;
+        delete []$3;
+    }
+    ;    
 Idlist
     :
     ID {

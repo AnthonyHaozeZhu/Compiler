@@ -61,6 +61,13 @@ public:
     void output(int level);
 };
 
+class ConstId : public ExprNode
+{
+public:
+    ConstId(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+};
+
 class FuncFParam : public ExprNode
 {
 public:
@@ -127,6 +134,15 @@ public:
     void output(int level);
 };
 
+class ConstIdList : public ListNode
+{
+public:
+    std::vector<ConstId*> CIds;
+    std::vector<AssignStmt*> Assigns;
+    ConstIdList(std::vector<ConstId*> CIds, std::vector<AssignStmt*> Assigns) : CIds(CIds), Assigns(Assigns) {};
+    void output(int level);
+};
+
 class FuncRParams : public ListNode
 {
 public:
@@ -153,6 +169,14 @@ public:
     void output(int level);
 };
 
+class ConstDeclStmt : public StmtNode
+{
+private:
+    ConstIdList *Cids;
+public:
+    ConstDeclStmt(ConstIdList *Cids) : Cids(Cids){};
+    void output(int level);
+};
 
 class IfStmt : public StmtNode
 {

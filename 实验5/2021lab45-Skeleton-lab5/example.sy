@@ -1,12 +1,1 @@
-int z;
-int a(int c = 1, int b, int a)
-{
-    c = 1;
-}
-int b(int c, int d)
-{
-    c = 011;
-    return a(c, d, 1 +1);
-    return getint;
-    continue;
-}
+getint();
