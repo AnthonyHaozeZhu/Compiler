@@ -86,6 +86,18 @@ COMMENTEND "*/"
     return WHILE;
 }
 
+"break" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("BREAK\tbreak");
+    return BREAK;
+}
+
+"continue" {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4("CONTINUE\tcontinue");
+    return CONTINUE;
+}
+
 "const" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("CONST\tconst");

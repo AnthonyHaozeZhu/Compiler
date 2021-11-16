@@ -27,7 +27,7 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
-%token IF ELSE 
+%token IF ELSE BREAK CONTINUE
 %token WHILE
 %token INT VOID CHAR
 %token CONST 
@@ -72,6 +72,14 @@ Stmt
     | DeclStmt {$$=$1;}
     | FuncDef {$$=$1;}
     | WhileStmt {$$ = $1;}
+    | 
+    BREAK SEMICOLON {
+        $$ = new BreakStmt();
+    }
+    |
+    CONTINUE SEMICOLON {
+        $$ = new ContinueStmt();
+    }
     ;
 LVal
     : ID {

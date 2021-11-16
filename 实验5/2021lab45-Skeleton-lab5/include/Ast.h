@@ -85,6 +85,21 @@ public:
     void output(int level);
 };
 
+class BreakStmt : public StmtNode
+{
+public:
+    BreakStmt() {};
+    void output(int level);
+}
+;
+
+class ContinueStmt : public StmtNode
+{
+public:
+    ContinueStmt() {};
+    void output(int level);
+};
+
 class CompoundStmt : public StmtNode
 {
 private:
