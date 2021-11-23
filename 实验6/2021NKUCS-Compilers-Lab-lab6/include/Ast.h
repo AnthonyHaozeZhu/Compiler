@@ -51,8 +51,21 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS, GREATER};
+    enum {ADD, SUB, AND, OR, LESS, MORE, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL, MUL, DIV, PERC, GREATER};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){dst = new Operand(se);};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class SignleExpr : public ExprNode 
+{
+private:
+    int op;
+    ExprNode *expr;
+public:
+    enum {SUB, ADD, EXCLAMATION};
+    SignleExpr(SymbolEntry *se, int op, ExprNode*expr) : ExprNode(se), op(op), expr(expr){};
     void output(int level);
     void typeCheck();
     void genCode();
@@ -76,8 +89,79 @@ public:
     void genCode();
 };
 
+class ConstId : public ExprNode
+{
+public:
+    ConstId(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class FuncFParam : public ExprNode
+{
+public:
+    FuncFParam(SymbolEntry *se) : ExprNode(se){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class ListNode : public Node
+{};
+
 class StmtNode : public Node
 {};
+
+class Empty : public StmtNode
+{
+public:
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class SignleStmt : public StmtNode
+{
+private:
+    ExprNode* expr;
+public:
+    SignleStmt(ExprNode* expr) : expr(expr){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class AssignStmt : public StmtNode
+{
+private:
+    ExprNode *lval;
+    ExprNode *expr;
+public:
+    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class BreakStmt : public StmtNode
+{
+public:
+    BreakStmt() {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+}
+;
+
+class ContinueStmt : public StmtNode
+{
+public:
+    ContinueStmt() {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
 
 class CompoundStmt : public StmtNode
 {
@@ -101,12 +185,66 @@ public:
     void genCode();
 };
 
+class IdList : public ListNode
+{
+public:
+    std::vector<Id*> Ids;
+    std::vector<AssignStmt*> Assigns;
+    IdList(std::vector<Id*> Ids, std::vector<AssignStmt*> Assigns) : Ids(Ids), Assigns(Assigns) {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class ConstIdList : public ListNode
+{
+public:
+    std::vector<ConstId*> CIds;
+    std::vector<AssignStmt*> Assigns;
+    ConstIdList(std::vector<ConstId*> CIds, std::vector<AssignStmt*> Assigns) : CIds(CIds), Assigns(Assigns) {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class FuncRParams : public ListNode
+{
+public:
+    std::vector<ExprNode*> Exprs;
+    FuncRParams(std::vector<ExprNode*> Exprs) : Exprs(Exprs){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class FuncFParams : public ListNode
+{
+public:
+    std::vector<FuncFParam*> FPs;
+    std::vector<AssignStmt*> Assigns;
+    FuncFParams(std::vector<FuncFParam*> FPs, std::vector<AssignStmt*> Assigns) : FPs(FPs), Assigns(Assigns) {};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
 class DeclStmt : public StmtNode
 {
 private:
-    Id *id;
+    IdList *ids;
 public:
-    DeclStmt(Id *id) : id(id){};
+    DeclStmt(IdList *ids) : ids(ids){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class ConstDeclStmt : public StmtNode
+{
+private:
+    ConstIdList *Cids;
+public:
+    ConstDeclStmt(ConstIdList *Cids) : Cids(Cids){};
     void output(int level);
     void typeCheck();
     void genCode();
@@ -119,6 +257,18 @@ private:
     StmtNode *thenStmt;
 public:
     IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class WhileStmt : public StmtNode
+{
+private:
+    ExprNode *cond;
+    StmtNode *loop;
+public:
+    WhileStmt(ExprNode *cond, StmtNode *loop) : cond(cond), loop(loop) {};
     void output(int level);
     void typeCheck();
     void genCode();
@@ -148,25 +298,26 @@ public:
     void genCode();
 };
 
-class AssignStmt : public StmtNode
-{
-private:
-    ExprNode *lval;
-    ExprNode *expr;
-public:
-    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
-    void output(int level);
-    void typeCheck();
-    void genCode();
-};
+
 
 class FunctionDef : public StmtNode
 {
 private:
     SymbolEntry *se;
+    FuncFParams *FPs;
     StmtNode *stmt;
 public:
-    FunctionDef(SymbolEntry *se, StmtNode *stmt) : se(se), stmt(stmt){};
+    FunctionDef(SymbolEntry *se, FuncFParams *FPs, StmtNode *stmt) : se(se), FPs(FPs), stmt(stmt){};
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class FunctionCall : public ExprNode
+{
+public:
+    FuncRParams *RPs;
+    FunctionCall(SymbolEntry*se, FuncRParams *RPs) : ExprNode(se), RPs(RPs){};
     void output(int level);
     void typeCheck();
     void genCode();

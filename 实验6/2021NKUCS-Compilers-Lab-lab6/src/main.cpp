@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include "Ast.h"
 #include "Unit.h"
+#include "Type.h"
+#include "SymbolTable.h"
 using namespace std;
 
 Ast ast;
@@ -57,6 +59,14 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: fail to open output file\n", outfile);
         exit(EXIT_FAILURE);
     }
+    SymbolEntry *se1 = new IdentifierSymbolEntry(TypeSystem::intType, "getint", identifiers->getLevel());
+    SymbolEntry *se2 = new IdentifierSymbolEntry(TypeSystem::intType, "getch", identifiers->getLevel());
+    SymbolEntry *se3 = new IdentifierSymbolEntry(TypeSystem::voidType, "putint", identifiers->getLevel());
+    SymbolEntry *se4 = new IdentifierSymbolEntry(TypeSystem::voidType, "putch", identifiers->getLevel());
+    identifiers->install("getint", se1);
+    identifiers->install("getch", se2);
+    identifiers->install("putint", se3);
+    identifiers->install("putch", se4);
     yyparse();
     if(dump_ast)
         ast.output();

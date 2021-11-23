@@ -147,34 +147,34 @@ void SeqNode::genCode()
     // Todo
 }
 
-void DeclStmt::genCode()
-{
-    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
-    if(se->isGlobal())
-    {
-        Operand *addr;
-        SymbolEntry *addr_se;
-        addr_se = new IdentifierSymbolEntry(*se);
-        addr_se->setType(new PointerType(se->getType()));
-        addr = new Operand(addr_se);
-        se->setAddr(addr);
-    }
-    else if(se->isLocal())
-    {
-        Function *func = builder->getInsertBB()->getParent();
-        BasicBlock *entry = func->getEntry();
-        Instruction *alloca;
-        Operand *addr;
-        SymbolEntry *addr_se;
-        Type *type;
-        type = new PointerType(se->getType());
-        addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
-        addr = new Operand(addr_se);
-        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
-        se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-    }
-}
+// void DeclStmt::genCode()
+// {
+//     IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(ids->getSymPtr());
+//     if(se->isGlobal())
+//     {
+//         Operand *addr;
+//         SymbolEntry *addr_se;
+//         addr_se = new IdentifierSymbolEntry(*se);
+//         addr_se->setType(new PointerType(se->getType()));
+//         addr = new Operand(addr_se);
+//         se->setAddr(addr);
+//     }
+//     else if(se->isLocal())
+//     {
+//         Function *func = builder->getInsertBB()->getParent();
+//         BasicBlock *entry = func->getEntry();
+//         Instruction *alloca;
+//         Operand *addr;
+//         SymbolEntry *addr_se;
+//         Type *type;
+//         type = new PointerType(se->getType());
+//         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+//         addr = new Operand(addr_se);
+//         alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+//         entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
+//         se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+//     }
+// }
 
 void ReturnStmt::genCode()
 {
@@ -192,6 +192,81 @@ void AssignStmt::genCode()
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
     new StoreInstruction(addr, src, bb);
+}
+
+void SignleStmt::genCode()
+{
+
+}
+
+void FuncRParams::genCode()
+{
+    
+}
+
+void Empty::genCode()
+{
+    
+}
+
+void FuncFParam::genCode()
+{
+    
+}
+
+void FuncFParams::genCode()
+{
+    
+}
+
+void ConstIdList::genCode()
+{
+    
+}
+
+void IdList::genCode()
+{
+    
+}
+
+void WhileStmt::genCode()
+{
+    
+}
+
+void FunctionCall::genCode()
+{
+    
+}
+
+void ConstDeclStmt::genCode()
+{
+    
+}
+
+void DeclStmt::genCode()
+{
+    
+}
+
+void ContinueStmt::genCode()
+{
+    
+}
+
+void BreakStmt::genCode()
+{
+    
+}
+
+void ConstId::genCode()
+{
+    
+}
+
+void SignleExpr::genCode()
+{
+    
 }
 
 void Ast::typeCheck()
@@ -255,6 +330,85 @@ void AssignStmt::typeCheck()
     // Todo
 }
 
+
+void SignleStmt::typeCheck()
+{
+
+}
+
+void FuncRParams::typeCheck()
+{
+    
+}
+
+void Empty::typeCheck()
+{
+    
+}
+
+void FuncFParam::typeCheck()
+{
+    
+}
+
+void FuncFParams::typeCheck()
+{
+    
+}
+
+void ConstIdList::typeCheck()
+{
+    
+}
+
+void IdList::typeCheck()
+{
+    
+}
+
+void WhileStmt::typeCheck()
+{
+    
+}
+
+void FunctionCall::typeCheck()
+{
+    
+}
+
+void ConstDeclStmt::typeCheck()
+{
+    
+}
+
+void ContinueStmt::typeCheck()
+{
+    
+}
+
+void BreakStmt::typeCheck()
+{
+    
+}
+
+void ConstId::typeCheck()
+{
+    
+}
+
+void SignleExpr::typeCheck()
+{
+    
+}
+
+
+void Ast::output()
+{
+    fprintf(yyout, "program\n");
+    if(root != nullptr)
+        root->output(4);
+}
+
 void BinaryExpr::output(int level)
 {
     std::string op_str;
@@ -275,18 +429,55 @@ void BinaryExpr::output(int level)
         case LESS:
             op_str = "less";
             break;
+        case MORE:
+            op_str = "more";
+            break;
+        case MOREEQUAL:
+            op_str = "moreequal";
+            break;
+        case LESSEQUAL:
+            op_str = "lessequal";
+            break;
+        case EQUAL:
+            op_str = "equal";
+            break;
+        case NOEQUAL:
+            op_str = "noequal";
+            break;
+        case DIV:
+            op_str = "div";
+            break;
+        case MUL:
+            op_str = "mul";
+            break;
+        case PERC:
+            op_str = "mod";
+            break;
     }
     fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr1->output(level + 4);
     expr2->output(level + 4);
 }
 
-void Ast::output()
+void SignleExpr::output(int level)
 {
-    fprintf(yyout, "program\n");
-    if(root != nullptr)
-        root->output(4);
+    std::string op_str;
+    switch(op)
+    {
+        case SUB:
+            op_str = "negative";
+            break;
+        case ADD:
+            op_str = "positive";
+            break;
+        case EXCLAMATION:
+            op_str = "anti";
+            break;
+    }
+    fprintf(yyout, "%*cSignleExpr\top: %s\n", level, ' ', op_str.c_str());
+    expr->output(level + 4);
 }
+
 
 void Constant::output(int level)
 {
@@ -295,6 +486,17 @@ void Constant::output(int level)
     value = symbolEntry->toStr();
     fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
             value.c_str(), type.c_str());
+}
+
+void ConstId::output(int level)
+{
+    std::string name, type;
+    int scope;
+    name = symbolEntry->toStr();
+    type = symbolEntry->getType()->toStr();
+    scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
+    fprintf(yyout, "%*cConstId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
+            name.c_str(), scope, type.c_str());
 }
 
 void Id::output(int level)
@@ -308,6 +510,17 @@ void Id::output(int level)
             name.c_str(), scope, type.c_str());
 }
 
+void FuncFParam::output(int level)
+{
+    std::string name, type;
+    int scope;
+    name = symbolEntry -> toStr();
+    type = symbolEntry -> getType() -> toStr();
+    scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry) -> getScope();
+    fprintf(yyout, "%*cFuncFParam\tname:%s\tscope:%d\ttype:%s\n", level, ' ',
+            name.c_str(), scope, type.c_str());
+}
+
 void CompoundStmt::output(int level)
 {
     fprintf(yyout, "%*cCompoundStmt\n", level, ' ');
@@ -316,14 +529,31 @@ void CompoundStmt::output(int level)
 
 void SeqNode::output(int level)
 {
-    stmt1->output(level);
-    stmt2->output(level);
+    fprintf(yyout, "%*cSequence\n", level, ' ');
+    stmt1->output(level + 4);
+    stmt2->output(level + 4);
+}
+
+void BreakStmt::output(int level)
+{
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+}
+
+void ContinueStmt::output(int level)
+{
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }
 
 void DeclStmt::output(int level)
 {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
-    id->output(level + 4);
+    ids->output(level + 4);
+}
+
+void ConstDeclStmt::output(int level)
+{
+    fprintf(yyout, "%*cConstDeclStmt\n", level, ' ');
+    Cids->output(level + 4);
 }
 
 void IfStmt::output(int level)
@@ -361,5 +591,83 @@ void FunctionDef::output(int level)
     type = se->getType()->toStr();
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
+    if(FPs != nullptr){
+        FPs -> output(level + 4);
+    }
     stmt->output(level + 4);
+}
+
+void FunctionCall::output(int level)
+{
+    std::string name, type;
+    name = symbolEntry->toStr();
+    type = symbolEntry->getType()->toStr();
+    fprintf(yyout, "%*cFuncCall\tname: %s\ttype: %s\n", level, ' ',
+            name.c_str(), type.c_str());
+    if(RPs != nullptr)
+    {
+        RPs -> output(level + 4);
+    }
+}
+
+void WhileStmt::output(int level)
+{
+    fprintf(yyout, "%*cWhileStmt\n", level, ' ');
+    cond->output(level + 4);
+    loop->output(level + 4);
+}
+
+void IdList::output(int level)
+{
+    fprintf(yyout, "%*cIdList\n", level, ' ');
+    for(long unsigned int i = 0; i < Ids.size(); i++)
+    {
+        Ids[i] -> output(level + 4);
+    }
+    for(long unsigned int i = 0; i < Assigns.size(); i++)
+    {
+        Assigns[i] -> output(level + 4);
+    }
+}
+void ConstIdList::output(int level)
+{
+    fprintf(yyout, "%*cConstIdList\n", level, ' ');
+    for(long unsigned int i = 0; i < CIds.size(); i++)
+    {
+        CIds[i] -> output(level + 4);
+        Assigns[i] -> output(level + 4);
+    }
+}
+
+void FuncFParams::output(int level)
+{
+    fprintf(yyout, "%*cFuncFParams\n", level, ' ');
+    for(long unsigned int i = 0; i < FPs.size(); i++)
+    {
+        FPs[i] -> output(level + 4);
+    }
+    for(long unsigned int i = 0; i < Assigns.size(); i++)
+    {
+        Assigns[i] -> output(level + 4);
+    }
+}
+
+void FuncRParams::output(int level)
+{
+    fprintf(yyout, "%*cFuncRParams\n", level, ' ');
+    for(long unsigned int i = 0; i < Exprs.size(); i++)
+    {
+        Exprs[i] -> output(level + 4);
+    }
+}
+
+void Empty::output(int level)
+{
+    fprintf(yyout, "%*cEmpty Statement\n", level, ' ');
+}
+
+void SignleStmt::output(int level)
+{
+    fprintf(yyout, "%*cSignle Statement\n", level, ' ');
+    expr -> output(level + 4);
 }
