@@ -67,3 +67,10 @@ TEST_PATH ?= test/level1-1
     make clean
 ```
 清除所有可执行文件和测试输出。
+
+
+## about debug
+* make ll by clang 
+```
+    clang -S -emit-llvm example.cpp -o madebyclang.ll
+```
