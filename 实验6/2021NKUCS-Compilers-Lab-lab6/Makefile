@@ -45,6 +45,7 @@ app:$(LEXER) $(PARSER) $(BINARY)
 
 run:app
 	@$(BINARY) -o example.ll -i example.sy
+	# @$(BINARY) -o example.ast -a example.sy
 
 gdb:app
 	@gdb $(BINARY)
@@ -75,3 +76,6 @@ testlab6:app $(OUTPUT_LAB6)
 
 clean:
 	@rm -rf $(BUILD_PATH) $(PARSER) $(LEXER) $(PARSERH) $(OUTPUT_LAB4) $(OUTPUT_LAB5) $(OUTPUT_LAB6) $(LLVM_IR) ./example.ast ./example.ll
+
+byclang:
+	@clang -S -emit-llvm example.cpp -o madebyclang.ll
