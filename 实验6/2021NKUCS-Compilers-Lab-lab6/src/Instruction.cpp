@@ -87,6 +87,15 @@ void BinaryInstruction::output() const
     case SUB:
         op = "sub";
         break;
+    case MUL:
+        op = "mul";
+        break;
+    case DIV:
+        op = "sdiv";
+        break;
+    case MOD:
+        op = "srem";
+        break;
     default:
         break;
     }
@@ -145,6 +154,8 @@ void CmpInstruction::output() const
     }
 
     fprintf(yyout, "  %s = icmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+//    std::cout << "执行了CmpInstruction::output()" << std::endl;
+    //fprintf(yyout, "执行了CmpInstruction::output()" );
 }
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) : Instruction(UNCOND, insert_bb)
@@ -154,6 +165,7 @@ UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) 
 
 void UncondBrInstruction::output() const
 {
+//    std::cout << "是否进入br打印阶段" << std::endl;
     fprintf(yyout, "  br label %%B%d\n", branch->getNo());
 }
 
@@ -181,12 +193,16 @@ CondBrInstruction::~CondBrInstruction()
 
 void CondBrInstruction::output() const
 {
+//    std::cout << "是否进入该跳转打印环节？" << std::endl;
     std::string cond, type;
     cond = operands[0]->toStr();
     type = operands[0]->getType()->toStr();
     int true_label = true_branch->getNo();
+//    std::cout << "1" << std::endl;
     int false_label = false_branch->getNo();
+//    std::cout << "2" << std::endl;
     fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n", type.c_str(), cond.c_str(), true_label, false_label);
+//    std::cout << "打印跳转环节没问题" << std::endl;
 }
 
 void CondBrInstruction::setFalseBranch(BasicBlock *bb)
