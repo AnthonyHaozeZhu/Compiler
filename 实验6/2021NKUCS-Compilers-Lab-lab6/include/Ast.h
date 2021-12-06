@@ -140,10 +140,9 @@ public:
 
 class AssignStmt : public StmtNode
 {
-private:
+public:
     ExprNode *lval;
     ExprNode *expr;
-public:
     AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
     void output(int level);
     void typeCheck();

@@ -1,18 +1,12 @@
-int main()
-{
-    int a;
-    int b;
-    int min;
-    a = 999 + 888;
-    b = 777 + 666;
-    while (a < b)
-    {
-        min = a;
-        min = 333 + 444;
-        int agg;
-
-    }
-  
-    min = 520131;
-    return min;
+int main() {
+int a;
+int b;
+int min;
+a = 1 + 2 + 3;
+b = 2 + 3 + 4;
+if (a < b)
+min = a;
+else
+min = b;
+return min;
 }
