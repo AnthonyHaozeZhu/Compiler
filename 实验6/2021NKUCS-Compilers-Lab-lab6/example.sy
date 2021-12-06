@@ -5,16 +5,14 @@ int main()
     int min;
     a = 999 + 888;
     b = 777 + 666;
-    if (a < b)
+    while (a < b)
     {
         min = a;
         min = 333 + 444;
         int agg;
 
     }
-    else{
-    a = 800;
-    }
+  
     min = 520131;
     return min;
 }

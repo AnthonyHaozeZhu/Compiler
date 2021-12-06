@@ -407,6 +407,39 @@ void IdList::genCode()
 void WhileStmt::genCode()
 {
     std::cout << "start18" << std::endl;
+    Function *func;
+    BasicBlock *loop_bb, *end_bb , *cond_bb;
+
+    func = builder -> getInsertBB() -> getParent();
+    loop_bb = new BasicBlock(func);
+    end_bb = new BasicBlock(func);
+    cond_bb = new BasicBlock(func);
+
+    //设置前后
+    cond_bb -> addPred(builder -> getInsertBB());
+    builder -> getInsertBB() -> addSucc(cond_bb);
+    loop_bb -> addPred(cond_bb);
+    cond_bb -> addSucc(loop_bb);
+
+    //builder -> getInsertBB() -> addSucc(loop_bb);
+    end_bb -> addPred(loop_bb);
+    loop_bb -> addSucc(end_bb);
+
+    end_bb -> addPred(cond_bb);
+    cond_bb -> addSucc(end_bb);
+
+    builder->setInsertBB(cond_bb);
+
+    cond -> genCode();
+    backPatch(cond -> trueList(), loop_bb);
+    backPatchFalse(cond -> falseList(), end_bb);
+
+    builder -> setInsertBB(loop_bb);
+    loop -> genCode();
+    loop_bb = builder -> getInsertBB();
+    new CondBrInstruction(cond_bb, end_bb, cond->getOperand(), loop_bb);
+
+    builder->setInsertBB(end_bb);
     std::cout << "end18" << std::endl;
 }
 
