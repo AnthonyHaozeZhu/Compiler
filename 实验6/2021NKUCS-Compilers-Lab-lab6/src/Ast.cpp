@@ -62,11 +62,11 @@ std::vector<Instruction*> Node::merge(std::vector<Instruction*> &list1, std::vec
 
 void Ast::genCode(Unit *unit)
 {
-    std::cout << "start" << std::endl;
+    //std::cout  << "start" << std::endl;
     IRBuilder *builder = new IRBuilder(unit);
     Node::setIRBuilder(builder);
     root->genCode();
-    std::cout << "end" << std::endl;
+    //std::cout  << "end" << std::endl;
 }
 
 
@@ -74,7 +74,7 @@ void Ast::genCode(Unit *unit)
 
 void FunctionDef::genCode()
 {
-    std::cout << "start0" << std::endl;
+    //std::cout  << "start0" << std::endl;
     Unit *unit = builder->getUnit();
     Function *func = new Function(unit, se);
     BasicBlock *entry = func->getEntry();
@@ -87,12 +87,12 @@ void FunctionDef::genCode()
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
      * Todo
     */
-    std::cout << "end0" << std::endl;
+    //std::cout  << "end0" << std::endl;
 }
 
 void BinaryExpr::genCode()
 {
-    std::cout << "start1" << std::endl;
+    //std::cout  << "start1" << std::endl;
     BasicBlock *bb = builder->getInsertBB();
     Function *func = bb->getParent();
     if (op == AND)
@@ -188,7 +188,7 @@ void BinaryExpr::genCode()
         }
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
-    std::cout << "end1" << std::endl;
+    //std::cout  << "end1" << std::endl;
 }
 
 void Constant::genCode()
@@ -198,16 +198,16 @@ void Constant::genCode()
 
 void Id::genCode()
 {
-    std::cout << "start3" << std::endl;
+    //std::cout  << "start3" << std::endl;
     BasicBlock *bb = builder->getInsertBB();
     Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
     new LoadInstruction(dst, addr, bb);
-    std::cout << "end3" << std::endl;
+    //std::cout  << "end3" << std::endl;
 }
 
 void IfStmt::genCode()
 {
-    std::cout << "start4" << std::endl;
+    //std::cout  << "start4" << std::endl;
     Function *func;
     BasicBlock *then_bb, *end_bb;
 
@@ -234,12 +234,12 @@ void IfStmt::genCode()
     new UncondBrInstruction(end_bb, then_bb);
 
     builder->setInsertBB(end_bb);
-    std::cout << "end4" << std::endl;
+    //std::cout  << "end4" << std::endl;
 }
 
 void IfElseStmt::genCode()
 {
-    std::cout << "start5" << std::endl;
+    //std::cout  << "start5" << std::endl;
     // Todo完成
     Function *func;
     BasicBlock *then_bb, *else_bb,*end_bb;
@@ -280,29 +280,29 @@ void IfElseStmt::genCode()
 
     builder->setInsertBB(end_bb);
 
-    std::cout << "end5" << std::endl;
+    //std::cout  << "end5" << std::endl;
 }
 
 void CompoundStmt::genCode()
 {
-    std::cout << "start6" << std::endl;
+    //std::cout  << "start6" << std::endl;
     // Todo 完成
     stmt -> genCode();
-    std::cout << "end6" << std::endl;
+    //std::cout  << "end6" << std::endl;
 }
 
 void SeqNode::genCode()
 {
-    std::cout << "start7" << std::endl;
+    //std::cout  << "start7" << std::endl;
     stmt1 -> genCode();
     stmt2 -> genCode();
     // Todo完成
-    std::cout << "end7" << std::endl;
+    //std::cout  << "end7" << std::endl;
 }
 
 void DeclStmt::genCode()
 {
-    std::cout << "start8" << std::endl;
+    //std::cout  << "start8" << std::endl;
     for(long unsigned int i = 0; i < ids -> Ids.size(); i++)
     {
         IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(ids -> Ids[i] -> getSymPtr());
@@ -331,12 +331,31 @@ void DeclStmt::genCode()
             se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
         }
     }
-    std::cout << "end8" << std::endl;
+    for(long unsigned int i = 0; i < ids -> Assigns.size(); i++)
+    {
+        IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(ids -> Assigns[i] -> lval -> getSymPtr());
+        if(se -> isGlobal())
+        {
+            //do nothing
+        }
+        else if(se -> isLocal())
+        {
+            Function *func = builder -> getInsertBB() -> getParent();
+            BasicBlock *entry = func -> getEntry();
+            ids -> Assigns[i] -> gencode();
+            Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(ids -> Assigns[i] -> lval ->getSymPtr())->getAddr();
+            se->setAddr(addr); 
+            Operand *src = ids -> Assigns[i] -> expr -> getOperand();
+
+            new StoreInstruction(addr, src, entry);                      
+        }
+    }
+    //std::cout  << "end8" << std::endl;
 }
 
 void ReturnStmt::genCode()
 {
-    std::cout << "start9" << std::endl;
+    //std::cout  << "start9" << std::endl;
     // Todo完成
     BasicBlock *bb = builder -> getInsertBB();
     Operand* src = retValue -> getOperand();
@@ -344,12 +363,12 @@ void ReturnStmt::genCode()
     retValue -> genCode();
     //打印return语句
     new RetInstruction(src, bb);
-    std::cout << "end9" << std::endl;
+    //std::cout  << "end9" << std::endl;
 }
 
 void AssignStmt::genCode()
 {
-    std::cout << "start10" << std::endl;
+    //std::cout  << "start10" << std::endl;
     BasicBlock *bb = builder->getInsertBB();
     expr->genCode();
     Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();
@@ -359,54 +378,54 @@ void AssignStmt::genCode()
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
     new StoreInstruction(addr, src, bb);
-    std::cout << "end10" << std::endl;
+    //std::cout  << "end10" << std::endl;
 }
 
 void SignleStmt::genCode()
 {
-    std::cout << "start11" << std::endl;
-    std::cout << "end11" << std::endl;
+    //std::cout  << "start11" << std::endl;
+    //std::cout  << "end11" << std::endl;
 }
 
 void FuncRParams::genCode()
 {
-    std::cout << "start12" << std::endl;
-    std::cout << "end12" << std::endl;
+    //std::cout  << "start12" << std::endl;
+    //std::cout  << "end12" << std::endl;
 }
 
 void Empty::genCode()
 {
-    std::cout << "start13" << std::endl;
-    std::cout << "end13" << std::endl;
+    //std::cout  << "start13" << std::endl;
+    //std::cout  << "end13" << std::endl;
 }
 
 void FuncFParam::genCode()
 {
-    std::cout << "start14" << std::endl;
-    std::cout << "end14" << std::endl;
+    //std::cout  << "start14" << std::endl;
+    //std::cout  << "end14" << std::endl;
 }
 
 void FuncFParams::genCode()
 {
-    std::cout << "start15" << std::endl;
-    std::cout << "end15" << std::endl;
+    //std::cout  << "start15" << std::endl;
+    //std::cout  << "end15" << std::endl;
 }
 
 void ConstIdList::genCode()
 {
-    std::cout << "start16" << std::endl;
-    std::cout << "end16" << std::endl;
+    //std::cout  << "start16" << std::endl;
+    //std::cout  << "end16" << std::endl;
 }
 
 void IdList::genCode()
 {
-    std::cout << "start17" << std::endl;
-    std::cout << "end17" << std::endl;
+    //std::cout  << "start17" << std::endl;
+    //std::cout  << "end17" << std::endl;
 }
 
 void WhileStmt::genCode()
 {
-    std::cout << "start18" << std::endl;
+    //std::cout  << "start18" << std::endl;
     Function *func;
     BasicBlock *loop_bb, *end_bb , *cond_bb;
 
@@ -440,43 +459,43 @@ void WhileStmt::genCode()
     new CondBrInstruction(cond_bb, end_bb, cond->getOperand(), loop_bb);
 
     builder->setInsertBB(end_bb);
-    std::cout << "end18" << std::endl;
+    //std::cout  << "end18" << std::endl;
 }
 
 void FunctionCall::genCode()
 {
-    std::cout << "start19" << std::endl;
-    std::cout << "end19" << std::endl;
+    //std::cout  << "start19" << std::endl;
+    //std::cout  << "end19" << std::endl;
 }
 
 void ConstDeclStmt::genCode()
 {
-    std::cout << "start20" << std::endl;
-    std::cout << "end20" << std::endl;
+    //std::cout  << "start20" << std::endl;
+    //std::cout  << "end20" << std::endl;
 }
 
 void ContinueStmt::genCode()
 {
-    std::cout << "start21" << std::endl;
-    std::cout << "end21" << std::endl;
+    //std::cout  << "start21" << std::endl;
+    //std::cout  << "end21" << std::endl;
 }
 
 void BreakStmt::genCode()
 {
-    std::cout << "start22" << std::endl;
-    std::cout << "end22" << std::endl;
+    //std::cout  << "start22" << std::endl;
+    //std::cout  << "end22" << std::endl;
 }
 
 void ConstId::genCode()
 {
-    std::cout << "start23" << std::endl;
-    std::cout << "end23" << std::endl;
+    //std::cout  << "start23" << std::endl;
+    //std::cout  << "end23" << std::endl;
 }
 
 void SignleExpr::genCode()
 {
-    std::cout << "start24" << std::endl;
-    std::cout << "end24" << std::endl;
+    //std::cout  << "start24" << std::endl;
+    //std::cout  << "end24" << std::endl;
 }
 
 
