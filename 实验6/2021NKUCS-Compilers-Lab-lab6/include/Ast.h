@@ -21,6 +21,7 @@ protected:
     std::vector<Instruction*> false_list;
     static IRBuilder *builder;
     void backPatch(std::vector<Instruction*> &list, BasicBlock*bb);
+    void backPatchFalse(std::vector<Instruction*> &list, BasicBlock*bb);
     std::vector<Instruction*> merge(std::vector<Instruction*> &list1, std::vector<Instruction*> &list2);
 
 public:
@@ -51,7 +52,7 @@ private:
     int op;
     ExprNode *expr1, *expr2;
 public:
-    enum {ADD, SUB, AND, OR, LESS, MORE, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL, MUL, DIV, PERC, GREATER};
+    enum {ADD, MUL, DIV, PERC ,SUB, AND, OR, LESS, MOREEQUAL, LESSEQUAL, EQUAL, NOEQUAL, MORE};
     BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){dst = new Operand(se);};
     void output(int level);
     void typeCheck();
@@ -111,7 +112,12 @@ class ListNode : public Node
 {};
 
 class StmtNode : public Node
-{};
+{
+public:
+    Type *type = nullptr;
+    void gencode() {};
+    void typecheck() {};
+};
 
 class Empty : public StmtNode
 {
