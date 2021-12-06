@@ -24,10 +24,6 @@ void BasicBlock::insertBefore(Instruction *dst, Instruction *src)
     src->getPrev()->setNext(dst);
     src->setPrev(dst);
     dst->setNext(src);
-    if(this->head==src)
-    {
-        this->head=dst;
-    }
 
     dst->setParent(this);
 }
