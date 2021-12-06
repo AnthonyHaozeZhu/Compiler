@@ -379,49 +379,47 @@ void AssignStmt::genCode()
 
 void SignleStmt::genCode()
 {
-    //std::cout  << "start11" << std::endl;
-    //finish!
     expr -> genCode();
-    //std::cout  << "end11" << std::endl;
 }
 
-void FuncRParams::genCode()
+void Empty::genCode()
+{
+    //什么都不做
+}
+
+void FuncRParams::genCode()//函数实参
 {
     //std::cout  << "start12" << std::endl;
 
     //std::cout  << "end12" << std::endl;
 }
 
-void Empty::genCode()
-{
-    //std::cout  << "start13" << std::endl;
-    //do nothing finish!
-    //std::cout  << "end13" << std::endl;
-}
-
-void FuncFParam::genCode()
+void FuncFParam::genCode()//函数形参
 {
     //std::cout  << "start14" << std::endl;
     //std::cout  << "end14" << std::endl;
 }
 
-void FuncFParams::genCode()
+void FuncFParams::genCode()//函数形参列表
 {
     //std::cout  << "start15" << std::endl;
     //std::cout  << "end15" << std::endl;
 }
 
+void FunctionCall::genCode()
+{
+    //std::cout  << "start19" << std::endl;
+    //std::cout  << "end19" << std::endl;
+}
+
 void ConstIdList::genCode()
 {
-    //std::cout  << "start16" << std::endl;
-    //std::cout  << "end16" << std::endl;
+    //什么都不做
 }
 
 void IdList::genCode()
 {
-    //std::cout  << "start17" << std::endl;
-    //do noting finish!
-    //std::cout  << "end17" << std::endl;
+    //设么都不做
 }
 
 void WhileStmt::genCode()
@@ -461,12 +459,6 @@ void WhileStmt::genCode()
 
     builder->setInsertBB(end_bb);
     //std::cout  << "end18" << std::endl;
-}
-
-void FunctionCall::genCode()
-{
-    //std::cout  << "start19" << std::endl;
-    //std::cout  << "end19" << std::endl;
 }
 
 void ConstDeclStmt::genCode()
