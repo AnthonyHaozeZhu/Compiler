@@ -37,11 +37,10 @@ public:
 
 class ExprNode : public Node
 {
-protected:
+public:
     SymbolEntry *symbolEntry;
     Operand *dst;   // The result of the subtree is stored into dst.
-public:
-    ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
+    ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry), dst(new Operand(symbolEntry)){};
     Operand* getOperand() {return dst;};
     SymbolEntry* getSymPtr() {return symbolEntry;};
 };
@@ -102,7 +101,7 @@ public:
 class FuncFParam : public ExprNode
 {
 public:
-    FuncFParam(SymbolEntry *se) : ExprNode(se){};
+    FuncFParam(SymbolEntry *se) : ExprNode(se){SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel()); dst = new Operand(temp);};
     void output(int level);
     void typeCheck();
     void genCode();
@@ -115,8 +114,8 @@ class StmtNode : public Node
 {
 public:
     Type *type = nullptr;
-    void gencode() {};
-    void typecheck() {};
+    //void gencode() {};
+    //void typecheck() {};
 };
 
 class Empty : public StmtNode
@@ -156,8 +155,7 @@ public:
     void output(int level);
     void typeCheck();
     void genCode();
-}
-;
+};
 
 class ContinueStmt : public StmtNode
 {

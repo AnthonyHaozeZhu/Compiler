@@ -80,6 +80,11 @@ void FunctionDef::genCode()
     BasicBlock *entry = func->getEntry();
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
+    
+    if(FPs != nullptr)
+    {
+        FPs -> genCode();
+    }
 
     stmt->genCode();
 
@@ -92,7 +97,6 @@ void FunctionDef::genCode()
 
 void BinaryExpr::genCode()
 {
-    //std::cout  << "start1" << std::endl;
     BasicBlock *bb = builder->getInsertBB();
     Function *func = bb->getParent();
     if (op == AND)
@@ -188,12 +192,11 @@ void BinaryExpr::genCode()
         }
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     }
-    //std::cout  << "end1" << std::endl;
 }
 
 void Constant::genCode()
 {
-    // we don't need to generate code.
+    // do nothing
 }
 
 void Id::genCode()
@@ -241,7 +244,7 @@ void IfElseStmt::genCode()
 {
     // Todo完成
     Function *func;
-    BasicBlock *then_bb, *else_bb,*end_bb;
+    BasicBlock *then_bb, *else_bb, *end_bb;
 
     func = builder->getInsertBB()->getParent();
     then_bb = new BasicBlock(func);
@@ -306,7 +309,25 @@ void DeclStmt::genCode()
             addr_se->setType(new PointerType(se->getType()));
             addr = new Operand(addr_se);
             se->setAddr(addr);
-            Instruction *alloca = new AllocaInstruction(addr, se);
+            bool temp = false;
+            Operand *src;
+            for(long unsigned int i = 0; i < ids -> Assigns.size(); i++)
+            {
+                if(ids -> Assigns[i] -> lval -> symbolEntry == se)
+                {
+                    ids -> Assigns[i] -> genCode();
+                    src = ids -> Assigns[i] -> expr -> getOperand();
+                    temp = true;
+                    break; 
+                }              
+            }
+            if(temp == false)
+            {
+                SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+                Constant* digit = new Constant(se);
+                src = digit -> getOperand();
+            }
+            Instruction *alloca = new AllocaInstruction2(src, addr, se);
             alloca -> output();
         }
         else if(se->isLocal())
@@ -329,21 +350,14 @@ void DeclStmt::genCode()
     {
         IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(ids -> Assigns[i] -> lval -> getSymPtr());
         if(se -> isGlobal())
-        {
-            Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(ids -> Assigns[i] -> lval ->getSymPtr())->getAddr();
-            se->setAddr(addr); 
-            Operand *src = ids -> Assigns[i] -> expr -> getOperand();
-            StoreInstruction *temp = new StoreInstruction(addr, src); 
-            temp -> output();                     
+        { 
+            continue;                   
         }
         else if(se -> isLocal())
         {
-            Function *func = builder -> getInsertBB() -> getParent();
-            BasicBlock *entry = func -> getEntry();
             Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(ids -> Assigns[i] -> lval ->getSymPtr())->getAddr();
             se->setAddr(addr); 
-            Operand *src = ids -> Assigns[i] -> expr -> getOperand();
-            new StoreInstruction(addr, src, entry);                      
+            ids -> Assigns[i] -> genCode();
         }
     }
     //std::cout  << "end8" << std::endl;
@@ -390,19 +404,42 @@ void Empty::genCode()
 void FuncRParams::genCode()//函数实参
 {
     //std::cout  << "start12" << std::endl;
-
     //std::cout  << "end12" << std::endl;
 }
 
 void FuncFParam::genCode()//函数形参
 {
-    //std::cout  << "start14" << std::endl;
-    //std::cout  << "end14" << std::endl;
+    //什么都不做
+    BasicBlock *bb = builder->getInsertBB();
+    Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
+    new LoadInstruction(dst, addr, bb);
 }
 
 void FuncFParams::genCode()//函数形参列表
 {
     //std::cout  << "start15" << std::endl;
+    Function *func = builder -> getInsertBB() -> getParent();
+    for(long unsigned int i = 0; i < FPs.size(); i++)
+    {
+        // BasicBlock *bb = builder->getInsertBB();
+        // Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(FPs[i] -> symbolEntry)->getAddr();
+        // func->insertparam(addr);
+        IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(FPs[i]->getSymPtr());
+        if(FPs[i]->getOperand() == nullptr) std::cout << "fun";
+        Type *type = new PointerType(se->getType());
+        SymbolEntry *addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        Operand *addr = new Operand(addr_se);
+
+
+        BasicBlock *entry = func->getEntry();
+        Instruction *alloca;
+        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block. 
+
+        se->setAddr(addr);   
+        func->params.push_back(addr); 
+    }
+    //fprintf(yyout, "test\n");
     //std::cout  << "end15" << std::endl;
 }
 
@@ -424,7 +461,6 @@ void IdList::genCode()
 
 void WhileStmt::genCode()
 {
-    //std::cout  << "start18" << std::endl;
     Function *func;
     BasicBlock *loop_bb, *end_bb , *cond_bb;
 
@@ -458,7 +494,6 @@ void WhileStmt::genCode()
     new CondBrInstruction(cond_bb, end_bb, cond->getOperand(), loop_bb);
 
     builder->setInsertBB(end_bb);
-    //std::cout  << "end18" << std::endl;
 }
 
 void ConstDeclStmt::genCode()
@@ -475,14 +510,10 @@ void ConstDeclStmt::genCode()
             addr_se->setType(new PointerType(se->getType()));
             addr = new Operand(addr_se);
             se->setAddr(addr);
-            Instruction *alloca = new AllocaInstruction(addr, se);
+            Cids -> Assigns[i] -> genCode();
+            Operand *src = Cids -> Assigns[i] -> expr -> getOperand();
+            Instruction *alloca = new AllocaInstruction2(src ,addr, se);
             alloca -> output();
-
-            Operand *addr1 = dynamic_cast<IdentifierSymbolEntry*>(Cids -> Assigns[i] -> lval ->getSymPtr())->getAddr();
-            se->setAddr(addr1); 
-            Operand *src1 = Cids -> Assigns[i] -> expr -> getOperand();
-            StoreInstruction *temp = new StoreInstruction(addr1, src1); 
-            temp -> output();
         }
         else if(se->isLocal())
         {
@@ -522,13 +553,32 @@ void BreakStmt::genCode()
 
 void ConstId::genCode()
 {
-    //std::cout  << "start23" << std::endl;
-    //std::cout  << "end23" << std::endl;
+    //do nothing!
 }
 
 void SignleExpr::genCode()
 {
-    //std::cout  << "start24" << std::endl;
+    BasicBlock *bb = builder->getInsertBB();
+    if(op >= SUB && op <= ADD)
+    {
+        expr->genCode();
+        Operand *src = expr->getOperand();
+        int opcode;
+        switch (op)
+        {
+        case ADD:
+            opcode = BinaryInstruction::ADD;
+            break;
+        case SUB:
+            opcode = BinaryInstruction::SUB;
+            break;
+        default:
+            break;
+        }
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+        Constant* digit = new Constant(se);
+        new BinaryInstruction(opcode, dst, digit -> getOperand(), src, bb);
+    }
     //std::cout  << "end24" << std::endl;
 }
 

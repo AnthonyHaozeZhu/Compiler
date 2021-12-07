@@ -166,6 +166,7 @@ UncondBrInstruction::UncondBrInstruction(BasicBlock *to, BasicBlock *insert_bb) 
 void UncondBrInstruction::output() const
 {
 //    std::cout << "是否进入br打印阶段" << std::endl;
+    if(!branch->empty())
     fprintf(yyout, "  br label %%B%d\n", branch->getNo());
 }
 
@@ -201,7 +202,7 @@ void CondBrInstruction::output() const
 //    std::cout << "1" << std::endl;
     int false_label = false_branch->getNo();
 //    std::cout << "2" << std::endl;
-    fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n", type.c_str(), cond.c_str(), true_label, false_label);
+    fprintf(yyout, "  br i1 %s, label %%B%d, label %%B%d\n",  cond.c_str(), true_label, false_label);
 //    std::cout << "打印跳转环节没问题" << std::endl;
 }
 

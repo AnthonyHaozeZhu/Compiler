@@ -31,7 +31,21 @@ void Function::output() const
 {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type *retType = funcType->getRetType();
-    fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    for(long unsigned int i = 0; i < params.size(); i++)
+    {
+        if(params[i] != nullptr) //std::cout << "fuck" << std::endl;
+        fprintf(yyout, "%s %s", (params[i])->getType()->toStr().c_str(),(params[i])->toStr().c_str());
+        //std::cout << "1" << std::endl;
+        if(i!= params.size() - 1) 
+        {
+            fprintf(yyout,", ");
+        }
+    }
+    fprintf(yyout, "){\n");
+
+    //for(long unsigned int i = 0; i < params.size(); i++)
+
 //    std::cout << "执行了Function的define" << std::endl;
     std::set<BasicBlock *> v;
     std::list<BasicBlock *> q;
@@ -42,7 +56,7 @@ void Function::output() const
 //        std::cout << "进入了Function的while循环" << std::endl;
         auto bb = q.front();
         q.pop_front();
-        bb->output();//出现问题的地方
+        bb->output();
         for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)
         {
 //            std::cout << "进入了function的for循环" << std::endl;

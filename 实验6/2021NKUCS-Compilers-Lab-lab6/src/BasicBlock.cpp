@@ -37,17 +37,20 @@ void BasicBlock::remove(Instruction *inst)
 
 void BasicBlock::output() const
 {
-    fprintf(yyout, "B%d:", no);
-
-    if (!pred.empty())
+    if(!empty())
     {
-        fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
-        for (auto i = pred.begin() + 1; i != pred.end(); i++)
-            fprintf(yyout, ", %%B%d", (*i)->getNo());
+        fprintf(yyout, "B%d:", no);
+
+        if (!pred.empty())
+        {
+            fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
+            for (auto i = pred.begin() + 1; i != pred.end(); i++)
+                fprintf(yyout, ", %%B%d", (*i)->getNo());
+        }
+        fprintf(yyout, "\n");
+        for (auto i = head->getNext(); i != head; i = i->getNext())
+            i->output();
     }
-    fprintf(yyout, "\n");
-    for (auto i = head->getNext(); i != head; i = i->getNext())
-        i->output();
 }
 
 void BasicBlock::addSucc(BasicBlock *bb)

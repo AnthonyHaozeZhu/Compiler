@@ -8,7 +8,7 @@ SYSLIB_PATH ?= sysyruntimelibrary
 
 INC = $(addprefix -I, $(INC_PATH))
 SRC = $(shell find $(SRC_PATH)  -name "*.cpp")
-CFLAGS = -O0 -g -Wall -Werror $(INC)
+CFLAGS = -O0 -g -Wall $(INC)
 FLEX ?= $(SRC_PATH)/lexer.l
 LEXER ?= $(addsuffix .cpp, $(basename $(FLEX)))
 BISON ?= $(SRC_PATH)/parser.y

@@ -49,6 +49,17 @@ private:
     SymbolEntry *se;
 };
 
+class AllocaInstruction2 : public Instruction
+{
+public:
+    Operand *src;
+    AllocaInstruction2(Operand *src, Operand *dst, SymbolEntry *se, BasicBlock *insert_bb = nullptr);
+    ~AllocaInstruction2();
+    void output() const;
+private:
+    SymbolEntry *se;
+};
+
 class LoadInstruction : public Instruction
 {
 public:
