@@ -277,6 +277,29 @@ void AllocaInstruction::output() const
     fprintf(yyout, "  %s = alloca %s, align 4\n", dst.c_str(), type.c_str());
 }
 
+AllocaInstruction2::AllocaInstruction2(Operand *src, Operand *dst, SymbolEntry *se, BasicBlock *insert_bb) : Instruction(ALLOCA, insert_bb)
+{
+    operands.push_back(dst);
+    dst->setDef(this);
+    this->se = se;
+    this -> src = src;
+}
+
+AllocaInstruction2::~AllocaInstruction2()
+{
+    operands[0]->setDef(nullptr);
+    if(operands[0]->usersNum() == 0)
+        delete operands[0];
+}
+
+void AllocaInstruction2::output() const
+{
+    std::string dst, type;
+    dst = operands[0]->toStr();
+    type = se->getType()->toStr();
+    fprintf(yyout, "  %s = global %s %s, align 4\n", dst.c_str(),  type.c_str(), (src -> toStr()).c_str());
+}
+
 LoadInstruction::LoadInstruction(Operand *dst, Operand *src_addr, BasicBlock *insert_bb) : Instruction(LOAD, insert_bb)
 {
     operands.push_back(dst);
