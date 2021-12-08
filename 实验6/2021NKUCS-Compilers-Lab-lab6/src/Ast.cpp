@@ -425,18 +425,26 @@ void FuncFParams::genCode()//函数形参列表
         // Operand *addr = dynamic_cast<IdentifierSymbolEntry*>(FPs[i] -> symbolEntry)->getAddr();
         // func->insertparam(addr);
         IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(FPs[i]->getSymPtr());
-        if(FPs[i]->getOperand() == nullptr) std::cout << "fun";
+        //if(FPs[i]->getOperand() == nullptr) std::cout << "fun";
         Type *type = new PointerType(se->getType());
         SymbolEntry *addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         Operand *addr = new Operand(addr_se);
 
+        SymbolTable :: counter++; //为了分配新的
+        SymbolEntry *addr_se2 = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        Operand *addr2 = new Operand(addr_se2);
 
+
+        //SymbolEntry *temp = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         BasicBlock *entry = func->getEntry();
         Instruction *alloca;
-        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block. 
+        alloca = new AllocaInstruction(addr2, se);                   // allocate space for local id in function stack.
+        entry->insertBack(alloca);                                 // allocate instructions should be inserted into the begin of the entry block. 
+        StoreInstruction *store = new StoreInstruction(addr2, addr);
+        entry -> insertBack(store);
 
-        se->setAddr(addr);   
+
+        se->setAddr(addr2);   
         func->params.push_back(addr); 
     }
     //fprintf(yyout, "test\n");
@@ -464,11 +472,14 @@ void WhileStmt::genCode()
     Function *func;
     BasicBlock *loop_bb, *end_bb , *cond_bb;
 
+
     func = builder -> getInsertBB() -> getParent();
     loop_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
     cond_bb = new BasicBlock(func);
 
+    UncondBrInstruction *temp = new UncondBrInstruction(cond_bb, builder -> getInsertBB());
+    temp -> output();
     //设置前后
     cond_bb -> addPred(builder -> getInsertBB());
     builder -> getInsertBB() -> addSucc(cond_bb);
