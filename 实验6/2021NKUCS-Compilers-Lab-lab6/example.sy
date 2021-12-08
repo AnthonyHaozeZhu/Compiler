@@ -6,7 +6,7 @@ int main()
 	{
 		flag=1;
 	}
-    int b = 1;
-	//putint(flag);
+    //int b = 1;
+	putint(flag);
 	return flag;
 }
