@@ -131,8 +131,8 @@ private:
     std::map<std::string, SymbolEntry*> symbolTable;
     SymbolTable *prev;
     int level;
-    static int counter;
 public:
+    static int counter;
     SymbolTable();
     SymbolTable(SymbolTable *prev);
     void install(std::string name, SymbolEntry* entry);

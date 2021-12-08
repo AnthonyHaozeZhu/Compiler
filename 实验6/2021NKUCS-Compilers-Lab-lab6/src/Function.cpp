@@ -35,7 +35,7 @@ void Function::output() const
     for(long unsigned int i = 0; i < params.size(); i++)
     {
         if(params[i] != nullptr) //std::cout << "fuck" << std::endl;
-        fprintf(yyout, "%s %s", (params[i])->getType()->toStr().c_str(),(params[i])->toStr().c_str());
+        fprintf(yyout, "i32 %s",(params[i])->toStr().c_str());
         //std::cout << "1" << std::endl;
         if(i!= params.size() - 1) 
         {

@@ -65,6 +65,7 @@ void Ast::genCode(Unit *unit)
     //std::cout  << "start" << std::endl;
     IRBuilder *builder = new IRBuilder(unit);
     Node::setIRBuilder(builder);
+    fprintf(yyout, "declare i32 @getint()\ndeclare void @putint(i32)\ndeclare i32 @getch()\ndeclare void @putch(i32)\n");
     root->genCode();
     //std::cout  << "end" << std::endl;
 }
@@ -426,12 +427,13 @@ void FuncFParams::genCode()//函数形参列表
         // func->insertparam(addr);
         IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(FPs[i]->getSymPtr());
         //if(FPs[i]->getOperand() == nullptr) std::cout << "fun";
-        Type *type = new PointerType(se->getType());
-        SymbolEntry *addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        Type *type1 = new PointerType(se->getType());
+        Type *type2 = new IntType(32);
+        SymbolEntry *addr_se = new TemporarySymbolEntry(type2, SymbolTable::getLabel());
         Operand *addr = new Operand(addr_se);
 
         SymbolTable :: counter++; //为了分配新的
-        SymbolEntry *addr_se2 = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        SymbolEntry *addr_se2 = new TemporarySymbolEntry(type1, SymbolTable::getLabel());
         Operand *addr2 = new Operand(addr_se2);
 
 
@@ -439,7 +441,7 @@ void FuncFParams::genCode()//函数形参列表
         BasicBlock *entry = func->getEntry();
         Instruction *alloca;
         alloca = new AllocaInstruction(addr2, se);                   // allocate space for local id in function stack.
-        entry->insertBack(alloca);                                 // allocate instructions should be inserted into the begin of the entry block. 
+        entry->insertBack(alloca);                                   // allocate instructions should be inserted into the begin of the entry block. 
         StoreInstruction *store = new StoreInstruction(addr2, addr);
         entry -> insertBack(store);
 
@@ -454,6 +456,25 @@ void FuncFParams::genCode()//函数形参列表
 void FunctionCall::genCode()
 {
     //std::cout  << "start19" << std::endl;
+    std::vector<Operand*> params;
+    //bool isnull = true;
+    if(RPs != nullptr)
+    for(unsigned i = 0; i < RPs -> Exprs.size(); i++)
+    {
+        //isnull = false;
+        if(RPs -> Exprs[i] != nullptr)
+        RPs -> Exprs[i] -> genCode();
+        params.push_back(RPs -> Exprs[i] -> getOperand());
+    }
+    Function *func = builder -> getInsertBB() -> getParent();
+    BasicBlock *entry = func->getEntry();
+
+    Type *type2 = new IntType(32);
+    SymbolTable :: counter++; //为了分配新的
+    SymbolEntry *addr_se2 = new TemporarySymbolEntry(type2, SymbolTable::getLabel());
+    dst = new Operand(addr_se2);
+    FunctioncallInstruction *temp = new FunctioncallInstruction(dst ,symbolEntry, params);
+    entry -> insertBack(temp);
     //std::cout  << "end19" << std::endl;
 }
 

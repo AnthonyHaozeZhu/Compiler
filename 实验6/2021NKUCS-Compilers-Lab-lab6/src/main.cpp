@@ -59,10 +59,12 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: fail to open output file\n", outfile);
         exit(EXIT_FAILURE);
     }
-    SymbolEntry *se1 = new IdentifierSymbolEntry(TypeSystem::intType, "getint", identifiers->getLevel());
-    SymbolEntry *se2 = new IdentifierSymbolEntry(TypeSystem::intType, "getch", identifiers->getLevel());
-    SymbolEntry *se3 = new IdentifierSymbolEntry(TypeSystem::voidType, "putint", identifiers->getLevel());
-    SymbolEntry *se4 = new IdentifierSymbolEntry(TypeSystem::voidType, "putch", identifiers->getLevel());
+    FunctionType *type1 = new FunctionType(TypeSystem::intType, {});
+    FunctionType *type2 = new FunctionType(TypeSystem::voidType, {});
+    SymbolEntry *se1 = new IdentifierSymbolEntry(type1, "getint", identifiers->getLevel());
+    SymbolEntry *se2 = new IdentifierSymbolEntry(type1, "getch", identifiers->getLevel());
+    SymbolEntry *se3 = new IdentifierSymbolEntry(type2, "putint", identifiers->getLevel());
+    SymbolEntry *se4 = new IdentifierSymbolEntry(type2, "putch", identifiers->getLevel());
     identifiers->install("getint", se1);
     identifiers->install("getch", se2);
     identifiers->install("putint", se3);
