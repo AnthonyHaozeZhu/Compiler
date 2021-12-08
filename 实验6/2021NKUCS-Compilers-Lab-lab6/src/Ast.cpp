@@ -369,9 +369,9 @@ void ReturnStmt::genCode()
     //std::cout  << "start9" << std::endl;
     // Todo完成
     BasicBlock *bb = builder -> getInsertBB();
-    Operand* src = retValue -> getOperand();
     //操作返回值
     retValue -> genCode();
+    Operand* src = retValue -> getOperand();
     //打印return语句
     new RetInstruction(src, bb);
     //std::cout  << "end9" << std::endl;
@@ -475,6 +475,7 @@ void FunctionCall::genCode()
     dst = new Operand(addr_se2);
     FunctioncallInstruction *temp = new FunctioncallInstruction(dst ,symbolEntry, params);
     entry -> insertBack(temp);
+    //this -> symbolEntry = addr_se2;
     //std::cout  << "end19" << std::endl;
 }
 
