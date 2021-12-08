@@ -274,15 +274,16 @@ void IfElseStmt::genCode()
     builder -> setInsertBB(then_bb);
     thenStmt -> genCode();
     then_bb = builder -> getInsertBB();
+    // builder->setInsertBB(then_bb);
     new UncondBrInstruction(end_bb, then_bb);
 
     builder -> setInsertBB(else_bb);
     elseStmt->genCode();
     else_bb = builder->getInsertBB();
+    // builder->setInsertBB(else_bb);
     new UncondBrInstruction(end_bb, else_bb);
 
     builder->setInsertBB(end_bb);
-
 }
 
 void CompoundStmt::genCode()
@@ -299,9 +300,9 @@ void SeqNode::genCode()
 void DeclStmt::genCode()
 {
     //std::cout  << "start8" << std::endl;
-    for(long unsigned int i = 0; i < ids -> Ids.size(); i++)
+    for(auto iter = ids->Ids.rbegin(); iter != ids->Ids.rend(); iter++)
     {
-        IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(ids -> Ids[i] -> getSymPtr());
+        IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>((*iter)-> getSymPtr());
         if(se->isGlobal())
         {
             Operand *addr;
@@ -467,7 +468,8 @@ void FunctionCall::genCode()
         params.push_back(RPs -> Exprs[i] -> getOperand());
     }
     Function *func = builder -> getInsertBB() -> getParent();
-    BasicBlock *entry = func->getEntry();
+    //BasicBlock *entry = func->getEntry();
+    BasicBlock *entry = builder -> getInsertBB();
 
     Type *type2 = new IntType(32);
     SymbolTable :: counter++; //为了分配新的

@@ -1,12 +1,8 @@
-int a = 1;
-int main()
-{
-	int flag=0;
-	if(a > 1)
-	{
-		flag=1;
-	}
-    //int b = 1;
-	putint(flag);
-	return flag;
+int a;
+int main(){
+    int a = 1; int b = 3;
+    if(a == b || b != a)
+    {
+        return 1;
+    }
 }
