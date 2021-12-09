@@ -181,7 +181,7 @@ COMMENTEND "*/"
 "||" {
     if(dump_tokens)
         DEBUG_FOR_LAB4("OR\t||");
-    return AND;
+    return OR;
 }
 "(" {
     if(dump_tokens)
