@@ -117,7 +117,7 @@ void BinaryExpr::genCode()
         // Todo
         BasicBlock *falseBB = new BasicBlock(func);
         expr1 -> genCode();
-        backPatch(expr1->falseList(), falseBB);
+        backPatchFalse(expr1->falseList(), falseBB);
         builder->setInsertBB(falseBB);
         expr2->genCode();
         false_list=expr2->falseList();
