@@ -111,6 +111,7 @@ void BinaryExpr::genCode()
         expr2->genCode();
         true_list = expr2->trueList();
         false_list = merge(expr1->falseList(), expr2->falseList());
+        dst -> getType() -> kind = 4;
     }
     else if(op == OR)
     {
@@ -122,6 +123,7 @@ void BinaryExpr::genCode()
         expr2->genCode();
         false_list=expr2->falseList();
         true_list=merge(expr1->trueList(), expr2->trueList());
+        dst -> getType() -> kind = 4;
     }
     else if(op >= LESS && op <= MORE)
     {
@@ -163,7 +165,7 @@ void BinaryExpr::genCode()
         Instruction* temp = new CondBrInstruction(nullptr,nullptr,dst,bb);
         this->trueList().push_back(temp);
         this->falseList().push_back(temp);
-
+        dst -> getType() -> kind = 4;
         
     }
     else if(op >= ADD && op <= SUB)
@@ -229,6 +231,21 @@ void IfStmt::genCode()
 
     if(cond != nullptr)
     cond->genCode();
+    if(!cond -> getOperand() -> getType() -> isBool())
+    {
+        BasicBlock* bb=cond->builder->getInsertBB();
+        Operand *src = cond->getOperand();
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+        Constant* digit = new Constant(se);
+        Operand* t = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+        CmpInstruction* temp = new CmpInstruction(CmpInstruction::EXCLAMATION, t, src, digit->getOperand(), bb);
+        src=t;
+        cond->trueList().push_back(temp);
+        cond->falseList().push_back(temp);
+        Instruction* m = new CondBrInstruction(nullptr,nullptr,t,bb);
+        cond->trueList().push_back(m);
+        cond->falseList().push_back(m);
+    }
     backPatch(cond->trueList(), then_bb);
     backPatchFalse(cond->falseList(), end_bb);
 
@@ -267,6 +284,21 @@ void IfElseStmt::genCode()
 
     //代码回填
     cond -> genCode();
+    if(!cond -> getOperand() -> getType() -> isBool())
+    {
+        BasicBlock* bb=cond->builder->getInsertBB();
+        Operand *src = cond->getOperand();
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+        Constant* digit = new Constant(se);
+        Operand* t = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+        CmpInstruction* temp = new CmpInstruction(CmpInstruction::EXCLAMATION, t, src, digit->getOperand(), bb);
+        src=t;
+        cond->trueList().push_back(temp);
+        cond->falseList().push_back(temp);
+        Instruction* m = new CondBrInstruction(nullptr,nullptr,t,bb);
+        cond->trueList().push_back(m);
+        cond->falseList().push_back(m);
+    }
     backPatch(cond -> trueList(), then_bb);
     backPatchFalse(cond -> falseList(), else_bb);
 
@@ -467,8 +499,6 @@ void FunctionCall::genCode()
         RPs -> Exprs[i] -> genCode();
         params.push_back(RPs -> Exprs[i] -> getOperand());
     }
-    Function *func = builder -> getInsertBB() -> getParent();
-    //BasicBlock *entry = func->getEntry();
     BasicBlock *entry = builder -> getInsertBB();
 
     Type *type2 = new IntType(32);
@@ -520,6 +550,21 @@ void WhileStmt::genCode()
     builder->setInsertBB(cond_bb);
 
     cond -> genCode();
+    if(!cond -> getOperand() -> getType() -> isBool())
+    {
+        BasicBlock* bb=cond->builder->getInsertBB();
+        Operand *src = cond->getOperand();
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+        Constant* digit = new Constant(se);
+        Operand* t = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+        CmpInstruction* temp = new CmpInstruction(CmpInstruction::EXCLAMATION, t, src, digit->getOperand(), bb);
+        src=t;
+        cond->trueList().push_back(temp);
+        cond->falseList().push_back(temp);
+        Instruction* m = new CondBrInstruction(nullptr,nullptr,t,bb);
+        cond->trueList().push_back(m);
+        cond->falseList().push_back(m);
+    }
     backPatch(cond -> trueList(), loop_bb);
     backPatchFalse(cond -> falseList(), end_bb);
 
@@ -533,7 +578,6 @@ void WhileStmt::genCode()
 
 void ConstDeclStmt::genCode()
 {
-    //std::cout  << "start20" << std::endl;
     for(long unsigned int i = 0; i < Cids -> CIds.size(); i++)
     {
         IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(Cids -> CIds[i] -> getSymPtr());
@@ -571,7 +615,6 @@ void ConstDeclStmt::genCode()
             new StoreInstruction(addr1, src, entry);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
         }
     }
-    //std::cout  << "end20" << std::endl;
 }
 
 void ContinueStmt::genCode()
@@ -594,10 +637,32 @@ void ConstId::genCode()
 void SignleExpr::genCode()
 {
     BasicBlock *bb = builder->getInsertBB();
+    if(op == EXCLAMATION)
+    {
+        Operand *src = expr->getOperand(); 
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+        Constant* digit = new Constant(se);
+        expr->genCode();
+        if(!expr -> getOperand() -> getType() -> isBool()){
+            Operand* t=new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+            new CmpInstruction(CmpInstruction::EXCLAMATION, t, src, digit->getOperand(), bb);
+            src=t;
+        }
+        new XorInstruction(dst,src,bb);
+        dst -> getType() -> kind = 4;
+        isCond = true;
+    }
     if(op >= SUB && op <= ADD)
     {
         expr->genCode();
         Operand *src = expr->getOperand();
+        if(src -> getType() -> isBool())
+        {
+            Operand* t =new Operand(new TemporarySymbolEntry(TypeSystem::intType,SymbolTable::getLabel()));
+            new ZextInstruction(t,expr -> dst,bb); 
+            expr -> dst = t;   
+            src = t; 
+        }
         int opcode;
         switch (op)
         {
@@ -613,8 +678,8 @@ void SignleExpr::genCode()
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, 0);
         Constant* digit = new Constant(se);
         new BinaryInstruction(opcode, dst, digit -> getOperand(), src, bb);
+        isCond = expr -> isCond;
     }
-    //std::cout  << "end24" << std::endl;
 }
 
 

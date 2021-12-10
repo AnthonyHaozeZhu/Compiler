@@ -38,6 +38,7 @@ public:
 class ExprNode : public Node
 {
 public:
+    bool isCond = false; //判断是否用做条件
     SymbolEntry *symbolEntry;
     Operand *dst;   // The result of the subtree is stored into dst.
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry), dst(new Operand(symbolEntry)){};

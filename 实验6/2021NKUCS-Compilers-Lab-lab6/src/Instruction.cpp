@@ -148,6 +148,9 @@ void CmpInstruction::output() const
     case GE:
         op = "sge";
         break;
+    case EXCLAMATION:
+        op = "ne";
+        break;
     default:
         op = "";
         break;
@@ -388,4 +391,50 @@ void FunctioncallInstruction::output() const
         fprintf(yyout, "%s %s", operands[i] -> getType() -> toStr().c_str(), operands[i] -> toStr().c_str());
     }
     fprintf(yyout, ")\n");
+}
+
+
+ZextInstruction::ZextInstruction ( Operand *dst, Operand *src,BasicBlock *insert_bb) : Instruction(ZEXT,insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+ZextInstruction2::ZextInstruction2 ( Operand *dst, Operand *src,BasicBlock *insert_bb) : Instruction(ZEXT,insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+void ZextInstruction ::output() const
+{    
+    Operand* dst=operands[0];
+    Operand* src=operands[1];
+    fprintf(yyout,"  %s = zext i1 %s to i32\n",dst->toStr().c_str(),src->toStr().c_str() );
+}
+
+void ZextInstruction2 ::output() const
+{    
+    Operand* dst=operands[0];
+    Operand* src=operands[1];
+    fprintf(yyout,"  %s = zext i32 %s to i1\n",dst->toStr().c_str(),src->toStr().c_str() );
+}
+
+XorInstruction::XorInstruction ( Operand *dst, Operand *src,BasicBlock *insert_bb) : Instruction(XOR,insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+void XorInstruction ::output() const
+{    
+    Operand* dst=operands[0];
+    Operand* src=operands[1];
+    fprintf(yyout,"  %s = xor i1 %s, true\n",dst->toStr().c_str(),src->toStr().c_str() );
 }
