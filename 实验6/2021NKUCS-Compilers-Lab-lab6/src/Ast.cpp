@@ -608,11 +608,13 @@ void ConstDeclStmt::genCode()
             alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
             entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
             se->setAddr(addr);
-            
+
+            Cids -> Assigns[i] -> expr -> genCode();
             Operand *addr1 = dynamic_cast<IdentifierSymbolEntry*>(Cids -> Assigns[i] -> lval ->getSymPtr())->getAddr();
             se->setAddr(addr1); 
             Operand *src = Cids -> Assigns[i] -> expr -> getOperand();
-            new StoreInstruction(addr1, src, entry);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+            BasicBlock *ttt = builder -> getInsertBB();
+            new StoreInstruction(addr1, src, ttt);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
         }
     }
 }
