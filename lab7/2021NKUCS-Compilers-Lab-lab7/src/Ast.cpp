@@ -354,6 +354,14 @@ void IfStmt::genCode()
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
+    then_bb -> addPred(builder->getInsertBB());//设置其前驱
+    builder -> getInsertBB() -> addSucc(then_bb);//设置后继
+    end_bb -> addPred(then_bb);
+    then_bb -> addSucc(end_bb);//
+    end_bb -> addPred(builder -> getInsertBB());
+    builder -> getInsertBB() -> addSucc(end_bb);
+
+
     builder->setGenBr(true);
     cond->genCode();
     builder->setGenBr(false);
@@ -377,6 +385,18 @@ void IfElseStmt::genCode()
     then_bb = new BasicBlock(func);
     else_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
+
+    then_bb -> addPred(builder -> getInsertBB());
+    builder -> getInsertBB() -> addSucc(then_bb);
+
+    else_bb -> addPred(builder -> getInsertBB());
+    builder -> getInsertBB() -> addSucc(else_bb);
+
+    end_bb -> addPred(then_bb);
+    then_bb -> addSucc(end_bb);
+    end_bb -> addPred(else_bb);
+    else_bb -> addSucc(end_bb);
+
 
     builder->setGenBr(true);
     cond->genCode();
@@ -418,6 +438,20 @@ void WhileStmt::genCode()
     cond_bb = new BasicBlock(func);
     body_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
+
+    cond_bb -> addPred(builder -> getInsertBB());
+    builder -> getInsertBB() -> addSucc(cond_bb);
+    body_bb -> addPred(cond_bb);
+    cond_bb -> addSucc(body_bb);
+
+    //builder -> getInsertBB() -> addSucc(loop_bb);
+    end_bb -> addPred(body_bb);
+    body_bb -> addSucc(end_bb);
+
+    end_bb -> addPred(cond_bb);
+    cond_bb -> addSucc(end_bb);
+
+
 
     insert_bb = builder->getInsertBB();
     new UncondBrInstruction(cond_bb, insert_bb);
@@ -603,6 +637,17 @@ void AssignStmt::genCode()
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
     new StoreInstruction(addr, src, bb);
+}
+
+void BreakStmt::genCode()
+{
+    new UncondBrInstruction(builder -> getInsertBB() -> pred[0] -> succ[0], builder -> getInsertBB());
+}
+
+void ContinueStmt::genCode()
+{
+    new UncondBrInstruction(builder -> getInsertBB() -> succ[0], builder -> getInsertBB());
+
 }
 
 void Ast::typeCheck()
@@ -865,4 +910,14 @@ void FunctionDef::output(int level)
     fprintf(yyout, "%*cFunctionDefine function name: %s, type: %s\n", level, ' ', 
             name.c_str(), type.c_str());
     stmt->output(level + 4);
+}
+
+void BreakStmt::output(int level)
+{
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+}
+
+void ContinueStmt::output(int level)
+{
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }

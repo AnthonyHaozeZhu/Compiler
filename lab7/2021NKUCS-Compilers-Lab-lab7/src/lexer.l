@@ -41,6 +41,8 @@ BLOCKCOMMENT_END "*/"
 "while" return WHILE;
 "else" return ELSE;
 "return" return RETURN;
+"break" return BREAK;
+"continue" return CONTINUE;
 "=" return ASSIGN;
 "+" return ADD;
 "-" return SUB;

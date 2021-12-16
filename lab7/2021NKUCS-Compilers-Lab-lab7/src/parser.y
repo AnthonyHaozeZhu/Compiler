@@ -26,7 +26,7 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INTEGER
-%token IF ELSE WHILE
+%token IF ELSE WHILE BREAK CONTINUE
 %token INT VOID
 %token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET COMMA
 %token ADD ASSIGN EQUAL NOT SUB MUL DIV MOD OR AND NOTEQUAL LESS GREATER LESSEQUAL GREATEREQUAL
@@ -62,6 +62,8 @@ Stmt
     | ExprStmt {$$=$1;}
     | BlankStmt {$$=$1;}
     | WhileStmt {$$=$1;}
+    | BREAK SEMICOLON {$$ = new BreakStmt();}
+    | CONTINUE SEMICOLON {$$ = new ContinueStmt();}
     ;
 LVal
     : ID {

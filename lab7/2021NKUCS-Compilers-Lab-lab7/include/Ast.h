@@ -311,6 +311,24 @@ public:
     void genCode();
 };
 
+class BreakStmt : public StmtNode
+{
+public:
+    BreakStmt(){};
+    void genCode();
+    void output(int level);
+    void typeCheck(){};
+};
+
+class ContinueStmt : public StmtNode
+{
+public:
+    ContinueStmt() {};
+    void genCode();
+    void output(int level);
+    void typeCheck(){};
+};
+
 class Ast
 {
 private:
