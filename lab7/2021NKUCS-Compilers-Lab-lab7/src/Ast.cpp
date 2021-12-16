@@ -77,6 +77,10 @@ void FunctionDef::genCode()
             succ->addPred(bb);
         }
     }
+    // if(func -> getBlockList()[(func -> getBlockList()).size() - 1] -> empty())
+    // {
+    new RetInstruction(nullptr, func -> getBlockList()[(func -> getBlockList()).size() - 1]);
+    // }
 }
 
 void BinaryExpr::genCode()
@@ -386,16 +390,16 @@ void IfElseStmt::genCode()
     else_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
-    then_bb -> addPred(builder -> getInsertBB());
-    builder -> getInsertBB() -> addSucc(then_bb);
+    // then_bb -> addPred(builder -> getInsertBB());
+    // builder -> getInsertBB() -> addSucc(then_bb);
 
-    else_bb -> addPred(builder -> getInsertBB());
-    builder -> getInsertBB() -> addSucc(else_bb);
+    // else_bb -> addPred(builder -> getInsertBB());
+    // builder -> getInsertBB() -> addSucc(else_bb);
 
-    end_bb -> addPred(then_bb);
-    then_bb -> addSucc(end_bb);
-    end_bb -> addPred(else_bb);
-    else_bb -> addSucc(end_bb);
+    // end_bb -> addPred(then_bb);
+    // then_bb -> addSucc(end_bb);
+    // end_bb -> addPred(else_bb);
+    // else_bb -> addSucc(end_bb);
 
 
     builder->setGenBr(true);
