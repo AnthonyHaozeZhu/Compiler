@@ -14,9 +14,10 @@ private:
     std::vector<Function *> func_list;
 public:
     Unit() = default;
-    ~Unit() ;
+    ~Unit();
     void insertFunc(Function *);
     void removeFunc(Function *);
+    void outputDecl() const;
     void output() const;
     iterator begin() { return func_list.begin(); };
     iterator end() { return func_list.end(); };

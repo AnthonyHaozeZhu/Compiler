@@ -79,18 +79,24 @@ private:
     int scope;
     Operand *addr;  // The address of the identifier.
     // You can add any field you need here.
+    int initVal;
+    bool is_extern;
 
 public:
-    IdentifierSymbolEntry(Type *type, std::string name, int scope);
+    IdentifierSymbolEntry(Type *type, std::string name, int scope, bool is_extern = false);
     virtual ~IdentifierSymbolEntry() {};
     std::string toStr();
     bool isGlobal() const {return scope == GLOBAL;};
     bool isParam() const {return scope == PARAM;};
     bool isLocal() const {return scope >= LOCAL;};
+    bool isExtern() const {return is_extern;};
     int getScope() const {return scope;};
     void setAddr(Operand *addr) {this->addr = addr;};
     Operand* getAddr() {return addr;};
     // You can add any function you need here.
+    void setInitVal(int val) {initVal = val;};
+    int getInitVal() {return initVal;};
+    std::string getInitValStr();
 };
 
 
@@ -135,6 +141,7 @@ private:
     SymbolTable *prev;
     int level;
     static int counter;
+    static SymbolTable t;
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);
@@ -143,6 +150,10 @@ public:
     SymbolTable* getPrev() {return prev;};
     int getLevel() {return level;};
     static int getLabel() {return counter++;};
+    static void init();
+    static SymbolTable* identifiers;
+    static SymbolTable* globals;
+    std::map<std::string, SymbolEntry*>& getTable() {return symbolTable;};
 };
 
 extern SymbolTable *identifiers;

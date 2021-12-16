@@ -19,8 +19,10 @@ void BasicBlock::insertBack(Instruction *inst)
 // insert the instruction dst before src.
 void BasicBlock::insertBefore(Instruction *dst, Instruction *src)
 {
-    // Todo
-
+    dst->setPrev(src->getPrev());
+    dst->setNext(src);
+    src->getPrev()->setNext(dst);
+    src->setPrev(dst);
     dst->setParent(this);
 }
 

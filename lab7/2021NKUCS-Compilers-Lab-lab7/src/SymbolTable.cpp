@@ -1,4 +1,5 @@
 #include "SymbolTable.h"
+#include "Type.h"
 #include <iostream>
 #include <sstream>
 
@@ -20,15 +21,26 @@ std::string ConstantSymbolEntry::toStr()
     return buffer.str();
 }
 
-IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
+IdentifierSymbolEntry::IdentifierSymbolEntry(Type *type, std::string name, int scope, bool is_extern) : SymbolEntry(type, SymbolEntry::VARIABLE), name(name)
 {
     this->scope = scope;
+    initVal = 0;
+    this->is_extern = is_extern;
     addr = nullptr;
 }
 
 std::string IdentifierSymbolEntry::toStr()
 {
-    return "@" + name;
+    if(isGlobal())
+        return "@" + name;
+    return "%" + name;
+}
+
+std::string IdentifierSymbolEntry::getInitValStr() 
+{
+    std::ostringstream buffer;
+    buffer << initVal;
+    return buffer.str();
 }
 
 TemporarySymbolEntry::TemporarySymbolEntry(Type *type, int label) : SymbolEntry(type, SymbolEntry::TEMPORARY)
@@ -70,8 +82,64 @@ SymbolTable::SymbolTable(SymbolTable *prev)
 */
 SymbolEntry* SymbolTable::lookup(std::string name)
 {
-    // Todo
+    for(SymbolTable *st = this; st != nullptr; st = st->prev)
+    {
+        auto it = st->symbolTable.find(name);
+        if(it != st->symbolTable.end())
+            return it->second;
+    }
     return nullptr;
+}
+
+void SymbolTable::init() 
+{
+    Type *i32Ty = IntType::get(32);
+    Type *voidTy = VoidType::get();
+    Type *ptrToI32Ty = PointerType::get(i32Ty);
+
+    Type *funcTy;
+    IdentifierSymbolEntry *func;
+    std::string name;
+
+    name = "getint";
+    funcTy = FunctionType::get(i32Ty, {});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "getch";
+    funcTy = FunctionType::get(i32Ty, {});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+    
+    name = "getarray";
+    funcTy = FunctionType::get(i32Ty, {ptrToI32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "putint";
+    funcTy = FunctionType::get(voidTy, {i32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "putch";
+    funcTy = FunctionType::get(voidTy, {i32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "putarray";
+    funcTy = FunctionType::get(voidTy, {i32Ty, ptrToI32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "_sysy_starttime";
+    funcTy = FunctionType::get(voidTy, {i32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
+
+    name = "_sysy_stoptime";
+    funcTy = FunctionType::get(voidTy, {i32Ty});
+    func = new IdentifierSymbolEntry(funcTy, name, globals->getLevel(), true);
+    globals->install(name, func);
 }
 
 // install the entry into current symbol table.
@@ -81,6 +149,6 @@ void SymbolTable::install(std::string name, SymbolEntry* entry)
 }
 
 int SymbolTable::counter = 0;
-static SymbolTable t;
-SymbolTable *identifiers = &t;
-SymbolTable *globals = &t;
+SymbolTable SymbolTable::t;
+SymbolTable * SymbolTable::identifiers = &t;
+SymbolTable * SymbolTable::globals = &t;

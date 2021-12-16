@@ -87,10 +87,40 @@ void BinaryInstruction::output() const
     case SUB:
         op = "sub";
         break;
+    case MUL:
+        op = "mul";
+        break;
+    case DIV:
+        op = "sdiv";
+        break;
+    case MOD:
+        op = "srem";
+        break;
+    case XOR:
+        op = "xor";
+        break;
     default:
         break;
     }
     fprintf(yyout, "  %s = %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+}
+
+ExtInstruction::ExtInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb) : Instruction(EXT, insert_bb)
+{
+    operands.push_back(dst);
+    operands.push_back(src);
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+void ExtInstruction::output() const
+{
+    std::string dst, src, dst_type, src_type;
+    dst = operands[0]->toStr();
+    src = operands[1]->toStr();
+    dst_type = operands[0]->getType()->toStr();
+    src_type = operands[1]->getType()->toStr();
+    fprintf(yyout, "  %s = zext %s %s to %s\n", dst.c_str(), src_type.c_str(), src.c_str(), dst_type.c_str());
 }
 
 CmpInstruction::CmpInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb): Instruction(CMP, insert_bb){
@@ -121,7 +151,7 @@ void CmpInstruction::output() const
     type = operands[1]->getType()->toStr();
     switch (opcode)
     {
-    case E:
+    case EQ:
         op = "eq";
         break;
     case NE:
@@ -236,6 +266,56 @@ void RetInstruction::output() const
         ret = operands[0]->toStr();
         type = operands[0]->getType()->toStr();
         fprintf(yyout, "  ret %s %s\n", type.c_str(), ret.c_str());
+    }
+}
+
+CallInstruction::CallInstruction(Operand *dst, std::vector<Operand*> &params, SymbolEntry*se, BasicBlock *insert_bb) : Instruction(CALL, insert_bb)
+{
+    this->se = se;
+    this->opcode = opcode;
+    operands.push_back(dst);
+    operands.insert(operands.end(), params.begin(), params.end());
+    if(dst != nullptr)
+        dst->setDef(this);
+    for(auto &use:params)
+        use->addUse(this);
+}
+
+CallInstruction::~CallInstruction() 
+{
+    if(operands[0] != nullptr)
+        operands[0]->setDef(nullptr);
+    for (size_t i = 1; i < operands.size(); i++)
+    {
+        auto operand = operands[i];
+        operand->removeUse(this);
+    }
+}
+
+void CallInstruction::output() const
+{
+    fprintf(yyout, "  ");
+    if (operands[0] != nullptr)
+    {
+        std::string str = operands[0]->toStr();
+        fprintf(yyout, "%s = ", str.c_str());
+    }
+    FunctionType* funcType = dynamic_cast<FunctionType*>(se->getType());
+    Type *retType = funcType->getRetType();
+    fprintf(yyout, "call %s %s", retType->toStr().c_str(), se->toStr().c_str());
+    if (operands.size() == 1)
+        fprintf(yyout, "()\n");
+    else
+    {
+        std::string s;
+        s = operands[1]->toStr();
+        fprintf(yyout, "(%s %s", operands[1]->getType()->toStr().c_str(), s.c_str());
+        for (size_t i = 2; i < operands.size(); i++)
+        {
+            s = operands[i]->toStr();
+            fprintf(yyout, ", %s %s", operands[i]->getType()->toStr().c_str(), s.c_str());
+        }
+        fprintf(yyout, ")\n");
     }
 }
 
@@ -406,6 +486,16 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder)
     }
 }
 
+void CallInstruction::genMachineCode(AsmBuilder*)
+{
+    // To do 
+}
+
+void ExtInstruction::genMachineCode(AsmBuilder*)
+{
+    //TO do
+}
+
 void StoreInstruction::genMachineCode(AsmBuilder* builder)
 {
     // TODO
@@ -413,34 +503,34 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder)
 {
-    // TODO:
-    // complete other instructions
-    auto cur_block = builder->getBlock();
-    auto dst = genMachineOperand(operands[0]);
-    auto src1 = genMachineOperand(operands[1]);
-    auto src2 = genMachineOperand(operands[2]);
-    /* HINT:
-    * The source operands of ADD instruction in ir code both can be immediate num.
-    * However, it's not allowed in assembly code.
-    * So you need to insert LOAD/MOV instrucrion to load immediate num into register.
-    * As to other instructions, such as MUL, CMP, you need to deal with this situation, too.*/
-    MachineInstruction* cur_inst = nullptr;
-    if(src1->isImm())
-    {
-        auto internal_reg = genMachineVReg();
-        cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
-        cur_block->InsertInst(cur_inst);
-        src1 = new MachineOperand(*internal_reg);
-    }
-    switch (opcode)
-    {
-    case ADD:
-        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
-        break;
-    default:
-        break;
-    }
-    cur_block->InsertInst(cur_inst);
+    // // TODO:
+    // // complete other instructions
+    // auto cur_block = builder->getBlock();
+    // auto dst = genMachineOperand(operands[0]);
+    // auto src1 = genMachineOperand(operands[1]);
+    // auto src2 = genMachineOperand(operands[2]);
+    // /* HINT:
+    // * The source operands of ADD instruction in ir code both can be immediate num.
+    // * However, it's not allowed in assembly code.
+    // * So you need to insert LOAD/MOV instrucrion to load immediate num into register.
+    // * As to other instructions, such as MUL, CMP, you need to deal with this situation, too.*/
+    // MachineInstruction* cur_inst = nullptr;
+    // if(src1->isImm())
+    // {
+    //     auto internal_reg = genMachineVReg();
+    //     cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
+    //     cur_block->InsertInst(cur_inst);
+    //     src1 = new MachineOperand(*internal_reg);
+    // }
+    // switch (opcode)
+    // {
+    // case ADD:
+    //     cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
+    //     break;
+    // default:
+    //     break;
+    // }
+    // cur_block->InsertInst(cur_inst);
 }
 
 void CmpInstruction::genMachineCode(AsmBuilder* builder)

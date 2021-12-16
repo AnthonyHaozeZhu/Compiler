@@ -20,11 +20,12 @@ class Function
 private:
     std::vector<BasicBlock *> block_list;
     SymbolEntry *sym_ptr;
+    std::vector<SymbolEntry *> params_sym_ptr;
     BasicBlock *entry;
     Unit *parent;
 
 public:
-    Function(Unit *, SymbolEntry *);
+    Function(Unit *, SymbolEntry *, std::vector<SymbolEntry*> params);
     ~Function();
     void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };
     BasicBlock *getEntry() { return entry; };

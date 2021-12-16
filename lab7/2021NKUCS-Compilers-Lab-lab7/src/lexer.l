@@ -18,96 +18,70 @@
     }
 %}
 
-DECIMIAL ([1-9][0-9]*|0)
+DECIMIAL [1-9][0-9]*
+OCTAL 0[0-7]*
+HEXADECIMAL 0(x|X)[0-9a-zA-Z]+
 ID [[:alpha:]_][[:alpha:][:digit:]_]*
 EOL (\r\n|\n|\r)
 WHITE [\t ]
+LINECOMMENT \/\/[^\n]*
+BLOCKCOMMENT_BEGIN "/*"
+BLOCKCOMMENT_ELE .
+BLOCKCOMMENT_LINE (\r\n|\n|\r)
+BLOCKCOMMENT_END "*/"
 %x BLOCKCOMMENT
 
 %%
 
-"int" {
-    /*
-    * Questions: 
-    *   Q1: Why we need to return INT in further labs?
-    *   Q2: What is "INT" actually?
-    */
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("INT\tint");
-    return INT;
-}
-"void" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("VOID\tvoid");
-    return VOID;
-}
-"if" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("IF\tif");
-    return IF;
-};
-"else" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ELSE\telse");
-    return ELSE;
-};
-"return" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RETURN\treturn");
-    return RETURN;
-}
+"int" return INT;
+"void" return VOID;
+"const" return CONST;
 
-"&&" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("AND\t=");
-    return AND;
-}
-
-"=" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ASSIGN\t=");
-    return ASSIGN;
-}
-"<" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LESS\t<");
-    return LESS;
-}
-"+" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ADD\t+");
-    return ADD;
-}
-";" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("SEMICOLON\t;");
-    return SEMICOLON;
-}
-"(" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LPAREN\t(");
-    return LPAREN;
-}
-")" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RPAREN\t)");
-    return RPAREN;
-}
-"{" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LBRACE\t{");
-    return LBRACE;
-}
-"}" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RBRACE\t}");
-    return RBRACE;
-}
+"if" return IF;
+"while" return WHILE;
+"else" return ELSE;
+"return" return RETURN;
+"=" return ASSIGN;
+"+" return ADD;
+"-" return SUB;
+"*" return MUL;
+"/" return DIV;
+"%" return MOD;
+"!" return NOT;
+"||" return OR;
+"&&" return AND;
+"!=" return NOTEQUAL;
+"==" return EQUAL;
+"<" return LESS;
+">" return GREATER;
+"<=" return LESSEQUAL;
+">=" return GREATEREQUAL;
+"," return COMMA;
+";" return SEMICOLON;
+"(" return LPAREN;
+")" return RPAREN;
+"{" return LBRACE;
+"}" return RBRACE;
+"[" return LBRACKET;
+"]" return RBRACKET;
 
 {DECIMIAL} {
     if(dump_tokens)
         DEBUG_FOR_LAB4(yytext);
     yylval.itype = atoi(yytext);
+    return INTEGER;
+}
+
+{OCTAL} {
+    int val;
+    sscanf(yytext, "%o", &val);
+    yylval.itype = val;
+    return INTEGER;
+}
+{HEXADECIMAL} {
+    int val;
+    sscanf(yytext, "%x", &val);
+    yylval.itype = val;
     return INTEGER;
 }
 
@@ -122,4 +96,9 @@ WHITE [\t ]
 }
 {EOL} yylineno++;
 {WHITE}
+{LINECOMMENT}
+{BLOCKCOMMENT_BEGIN} {BEGIN BLOCKCOMMENT;}
+<BLOCKCOMMENT>{BLOCKCOMMENT_ELE} {}
+<BLOCKCOMMENT>{BLOCKCOMMENT_LINE} {yylineno++;}
+<BLOCKCOMMENT>{BLOCKCOMMENT_END} {BEGIN INITIAL;}
 %%

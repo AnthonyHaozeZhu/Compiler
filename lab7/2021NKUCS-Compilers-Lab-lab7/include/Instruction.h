@@ -37,7 +37,7 @@ protected:
     Instruction *next;
     BasicBlock *parent;
     std::vector<Operand*> operands;
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA, CALL, EXT};
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -84,8 +84,16 @@ public:
     BinaryInstruction(unsigned opcode, Operand *dst, Operand *src1, Operand *src2, BasicBlock *insert_bb = nullptr);
     ~BinaryInstruction();
     void output() const;
+    void genMachineCode(AsmBuilder* builder);
+    enum {SUB, ADD, MUL, DIV, MOD, XOR};
+};
+
+class ExtInstruction : public Instruction
+{
+public:
+    ExtInstruction(Operand *dst, Operand *src, BasicBlock *insert_bb = nullptr);
+    void output() const;
     void genMachineCode(AsmBuilder*);
-    enum {SUB, ADD, AND, OR};
 };
 
 class CmpInstruction : public Instruction
@@ -95,7 +103,7 @@ public:
     ~CmpInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
-    enum {E, NE, L, GE, G, LE};
+    enum {EQ, NE, L, GE, G, LE};
 };
 
 // unconditional branch
@@ -106,6 +114,7 @@ public:
     void output() const;
     void setBranch(BasicBlock *);
     BasicBlock *getBranch();
+    BasicBlock **patchBranch() {return &branch;};
     void genMachineCode(AsmBuilder*);
 protected:
     BasicBlock *branch;
@@ -122,6 +131,8 @@ public:
     BasicBlock* getTrueBranch();
     void setFalseBranch(BasicBlock*);
     BasicBlock* getFalseBranch();
+    BasicBlock **truePatchBranch() {return &true_branch;};
+    BasicBlock **falsePatchBranch() {return &false_branch;};
     void genMachineCode(AsmBuilder*);
 protected:
     BasicBlock* true_branch;
@@ -133,6 +144,17 @@ class RetInstruction : public Instruction
 public:
     RetInstruction(Operand *src, BasicBlock *insert_bb = nullptr);
     ~RetInstruction();
+    void output() const;
+    void genMachineCode(AsmBuilder*);
+};
+
+class CallInstruction : public Instruction
+{
+private:
+    SymbolEntry *se;
+public:
+    CallInstruction(Operand *dst, std::vector<Operand*> &operands, SymbolEntry*se, BasicBlock *insert_bb = nullptr);
+    ~CallInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };

@@ -24,7 +24,7 @@ bool dump_asm;
 int main(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "Siato:")) != -1)
+    while ((opt = getopt(argc, argv, "iato:")) != -1)
     {
         switch (opt)
         {
@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%s: fail to open output file\n", outfile);
         exit(EXIT_FAILURE);
     }
+    SymbolTable::init();
     yyparse();
     if(dump_ast)
         ast.output();
