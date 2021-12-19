@@ -503,34 +503,34 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder)
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder)
 {
-    // // TODO:
-    // // complete other instructions
-    // auto cur_block = builder->getBlock();
-    // auto dst = genMachineOperand(operands[0]);
-    // auto src1 = genMachineOperand(operands[1]);
-    // auto src2 = genMachineOperand(operands[2]);
-    // /* HINT:
-    // * The source operands of ADD instruction in ir code both can be immediate num.
-    // * However, it's not allowed in assembly code.
-    // * So you need to insert LOAD/MOV instrucrion to load immediate num into register.
-    // * As to other instructions, such as MUL, CMP, you need to deal with this situation, too.*/
-    // MachineInstruction* cur_inst = nullptr;
-    // if(src1->isImm())
-    // {
-    //     auto internal_reg = genMachineVReg();
-    //     cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
-    //     cur_block->InsertInst(cur_inst);
-    //     src1 = new MachineOperand(*internal_reg);
-    // }
-    // switch (opcode)
-    // {
-    // case ADD:
-    //     cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
-    //     break;
-    // default:
-    //     break;
-    // }
-    // cur_block->InsertInst(cur_inst);
+    // TODO:
+    // complete other instructions
+    auto cur_block = builder->getBlock();
+    auto dst = genMachineOperand(operands[0]);
+    auto src1 = genMachineOperand(operands[1]);
+    auto src2 = genMachineOperand(operands[2]);
+    /* HINT:
+    * The source operands of ADD instruction in ir code both can be immediate num.
+    * However, it's not allowed in assembly code.
+    * So you need to insert LOAD/MOV instrucrion to load immediate num into register.
+    * As to other instructions, such as MUL, CMP, you need to deal with this situation, too.*/
+    MachineInstruction* cur_inst = nullptr;
+    if(src1->isImm())
+    {
+        auto internal_reg = genMachineVReg();
+        cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
+        cur_block->InsertInst(cur_inst);
+        src1 = new MachineOperand(*internal_reg);
+    }
+    switch (opcode)
+    {
+    case ADD:
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, src1, src2);
+        break;
+    default:
+        break;
+    }
+    cur_block->InsertInst(cur_inst);
 }
 
 void CmpInstruction::genMachineCode(AsmBuilder* builder)

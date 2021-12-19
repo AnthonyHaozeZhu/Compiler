@@ -24,7 +24,7 @@ bool dump_asm;
 int main(int argc, char *argv[])
 {
     int opt;
-    while ((opt = getopt(argc, argv, "iato:")) != -1)
+    while ((opt = getopt(argc, argv, "Siato:")) != -1)
     {
         switch (opt)
         {
