@@ -12,12 +12,12 @@ class BasicBlock
     typedef std::vector<BasicBlock *>::iterator bb_iterator;
 
 private:
+    std::vector<BasicBlock *> pred, succ;
     Instruction *head;
     Function *parent;
     int no;
 
 public:
-    std::vector<BasicBlock *> pred, succ;
     BasicBlock(Function *);
     ~BasicBlock();
     void insertFront(Instruction *);

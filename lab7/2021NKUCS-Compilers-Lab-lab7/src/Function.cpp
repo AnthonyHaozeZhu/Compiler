@@ -5,18 +5,16 @@
 
 extern FILE* yyout;
 
-Function::Function(Unit *u, SymbolEntry *s, std::vector<SymbolEntry*> params_sym)
+Function::Function(Unit *u, SymbolEntry *s)
 {
     u->insertFunc(this);
     entry = new BasicBlock(this);
     sym_ptr = s;
-    params_sym_ptr = params_sym;
     parent = u;
 }
 
 Function::~Function()
 {
-    // problematic
     // auto delete_list = block_list;
     // for (auto &i : delete_list)
     //     delete i;
@@ -29,39 +27,35 @@ void Function::remove(BasicBlock *bb)
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
 
-void Function::output() const
-{
+void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
-    Type *retType = funcType->getRetType();
-    if(params_sym_ptr.empty())
-        fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
-    else
-    {
-        std::string name, type;
-        name = params_sym_ptr[0]->toStr();
-        type = params_sym_ptr[0]->getType()->toStr();
-        fprintf(yyout, "define %s %s(%s %s", retType->toStr().c_str(), sym_ptr->toStr().c_str(), type.c_str(), name.c_str());
-        for (size_t i = 1; i < params_sym_ptr.size(); i++)
-        {
-            name = params_sym_ptr[i]->toStr();
-            type = params_sym_ptr[i]->getType()->toStr();
-            fprintf(yyout, ", %s %s", type.c_str(), name.c_str());
+    Type* retType = funcType->getRetType();
+    std::vector<SymbolEntry*> paramsSe = funcType->getParamsSe();
+    if (!paramsSe.size())
+        fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(),
+                sym_ptr->toStr().c_str());
+    else {
+        fprintf(yyout, "define %s %s(", retType->toStr().c_str(),
+                sym_ptr->toStr().c_str());
+        for (long unsigned int i = 0; i < paramsSe.size(); i++) {
+            if (i)
+                fprintf(yyout, ", ");
+            fprintf(yyout, "%s %s", paramsSe[i]->getType()->toStr().c_str(),
+                    paramsSe[i]->toStr().c_str());
         }
         fprintf(yyout, ") {\n");
     }
-    std::set<BasicBlock *> v;
-    std::list<BasicBlock *> q;
+    std::set<BasicBlock*> v;
+    std::list<BasicBlock*> q;
     q.push_back(entry);
     v.insert(entry);
-    while (!q.empty())
-    {
+
+    while (!q.empty()) {
         auto bb = q.front();
         q.pop_front();
         bb->output();
-        for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++)
-        {
-            if (v.find(*succ) == v.end())
-            {
+        for (auto succ = bb->succ_begin(); succ != bb->succ_end(); succ++) {
+            if (v.find(*succ) == v.end()) {
                 v.insert(*succ);
                 q.push_back(*succ);
             }

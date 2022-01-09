@@ -1,44 +1,41 @@
 #include "BasicBlock.h"
-#include "Function.h"
 #include <algorithm>
+#include "Function.h"
 
 extern FILE* yyout;
 
 // insert the instruction to the front of the basicblock.
-void BasicBlock::insertFront(Instruction *inst)
-{
+void BasicBlock::insertFront(Instruction* inst) {
     insertBefore(inst, head->getNext());
 }
 
 // insert the instruction to the back of the basicblock.
-void BasicBlock::insertBack(Instruction *inst) 
-{
+void BasicBlock::insertBack(Instruction* inst) {
     insertBefore(inst, head);
 }
 
 // insert the instruction dst before src.
-void BasicBlock::insertBefore(Instruction *dst, Instruction *src)
-{
-    dst->setPrev(src->getPrev());
-    dst->setNext(src);
+void BasicBlock::insertBefore(Instruction* dst, Instruction* src) {
+    // Todo
     src->getPrev()->setNext(dst);
+    dst->setPrev(src->getPrev());
+
+    dst->setNext(src);
     src->setPrev(dst);
+
     dst->setParent(this);
 }
 
 // remove the instruction from intruction list.
-void BasicBlock::remove(Instruction *inst)
-{
+void BasicBlock::remove(Instruction* inst) {
     inst->getPrev()->setNext(inst->getNext());
     inst->getNext()->setPrev(inst->getPrev());
 }
 
-void BasicBlock::output() const
-{
+void BasicBlock::output() const {
     fprintf(yyout, "B%d:", no);
 
-    if (!pred.empty())
-    {
+    if (!pred.empty()) {
         fprintf(yyout, "%*c; preds = %%B%d", 32, '\t', pred[0]->getNo());
         for (auto i = pred.begin() + 1; i != pred.end(); i++)
             fprintf(yyout, ", %%B%d", (*i)->getNo());
@@ -48,28 +45,23 @@ void BasicBlock::output() const
         i->output();
 }
 
-void BasicBlock::addSucc(BasicBlock *bb)
-{
+void BasicBlock::addSucc(BasicBlock* bb) {
     succ.push_back(bb);
 }
 
 // remove the successor basicclock bb.
-void BasicBlock::removeSucc(BasicBlock *bb)
-{
+void BasicBlock::removeSucc(BasicBlock* bb) {
     succ.erase(std::find(succ.begin(), succ.end(), bb));
 }
 
-void BasicBlock::addPred(BasicBlock *bb)
-{
+void BasicBlock::addPred(BasicBlock* bb) {
     pred.push_back(bb);
 }
 
 // remove the predecessor basicblock bb.
-void BasicBlock::removePred(BasicBlock *bb)
-{
+void BasicBlock::removePred(BasicBlock* bb) {
     pred.erase(std::find(pred.begin(), pred.end(), bb));
 }
-
 void BasicBlock::genMachineCode(AsmBuilder* builder) 
 {
     auto cur_func = builder->getFunction();

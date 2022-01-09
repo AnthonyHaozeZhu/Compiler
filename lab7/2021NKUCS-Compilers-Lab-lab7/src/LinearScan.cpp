@@ -4,9 +4,8 @@
 #include "LiveVariableAnalysis.h"
 #include "MachineCode.h"
 
-LinearScan::LinearScan(MachineUnit* unit) {
+LinearScan::LinearScan(MachineUnit* unit) {   //初始化寄存器
     this->unit = unit;
-    // 这里不对r0-r3做分配嘛
     for (int i = 4; i < 11; i++)
         regs.push_back(i);
 }
@@ -28,35 +27,35 @@ void LinearScan::allocateRegisters() {
     }
 }
 
-void LinearScan::makeDuChains() {
-    LiveVariableAnalysis lva;
-    lva.pass(func);
+void LinearScan::makeDuChains() {   //构建定义-引用链
+    LiveVariableAnalysis lva; 
+    lva.pass(func);             //针对单个函数块的活跃性分析
     du_chains.clear();
     int i = 0;
     std::map<MachineOperand, std::set<MachineOperand*>> liveVar;
     for (auto& bb : func->getBlocks()) {
         liveVar.clear();
-        for (auto& t : bb->getLiveOut())
+        for (auto& t : bb->getLiveOut())    //将每个块将out的全加入活跃变量map中
             liveVar[*t].insert(t);
         int no;
-        no = i = bb->getInsts().size() + i;
+        no = i = bb->getInsts().size() + i;     //记录指令个数
         for (auto inst = bb->getInsts().rbegin(); inst != bb->getInsts().rend();
-             inst++) {
+             inst++) {                //对block中的每条指令
             (*inst)->setNo(no--);
-            for (auto& def : (*inst)->getDef()) {
-                if (def->isVReg()) {
-                    auto& uses = liveVar[*def];
-                    du_chains[def].insert(uses.begin(), uses.end());
-                    auto& kill = lva.getAllUses()[*def];
+            for (auto& def : (*inst)->getDef()) {    //对于每条指令中的def（即该指令新定义的目的操作数）
+                if (def->isVReg()) {                 //如果在虚拟寄存器中
+                    auto& uses = liveVar[*def];     //如果定义的操作数也在块out队列中，加入du链
+                    du_chains[def].insert(uses.begin(), uses.end());       //整个函数创建livevar就是为duchains服务的
+                    auto& kill = lva.getAllUses()[*def];             //该block杀死的def，即该def没有出现在out
                     std::set<MachineOperand*> res;
-                    set_difference(uses.begin(), uses.end(), kill.begin(),
-                                   kill.end(), inserter(res, res.end()));
-                    liveVar[*def] = res;
+                    set_difference(uses.begin(), uses.end(), kill.begin(),    //uses<-livevar[def]<-liveout
+                                   kill.end(), inserter(res, res.end()));     //即用liveout减杀死的
+                    liveVar[*def] = res;        //将差集放入def的livevar map队列中
                 }
             }
             for (auto& use : (*inst)->getUse()) {
                 if (use->isVReg())
-                    liveVar[*use].insert(use);
+                    liveVar[*use].insert(use);    //该块对源操作数use进行了计算，后边如果没有定义的话，记为该block产生了该use
             }
         }
     }
@@ -64,18 +63,13 @@ void LinearScan::makeDuChains() {
 
 void LinearScan::computeLiveIntervals() {
     makeDuChains();
-    intervals.clear();
+    intervals.clear();         //intervals用于记录当前未分配寄存器的活跃区间
     for (auto& du_chain : du_chains) {
         int t = -1;
         for (auto& use : du_chain.second)
             t = std::max(t, use->getParent()->getNo());
         Interval* interval = new Interval({du_chain.first->getParent()->getNo(),
-                                           t,
-                                           false,
-                                           0,
-                                           0,
-                                           {du_chain.first},
-                                           du_chain.second});
+            t, false, 0, 0, {du_chain.first}, du_chain.second});
         intervals.push_back(interval);
     }
     bool change;
@@ -119,7 +113,6 @@ bool LinearScan::linearScanRegisterAllocation() {
         expireOldIntervals(i);
         if (regs.empty()) {
             spillAtInterval(i);
-            // 不知道是不是该这样
             success = false;
         } else {
             i->rreg = regs.front();
@@ -156,47 +149,14 @@ void LinearScan::genSpillCode() {
         auto fp = new MachineOperand(MachineOperand::REG, 11);
         for (auto use : interval->uses) {
             auto temp = new MachineOperand(*use);
-            MachineOperand* operand = nullptr;
-            if (interval->disp > 255 || interval->disp < -255) {
-                operand = new MachineOperand(MachineOperand::VREG,
-                                             SymbolTable::getLabel());
-                auto inst1 = new LoadMInstruction(use->getParent()->getParent(),
-                                                  operand, off);
-                use->getParent()->insertBefore(inst1);
-            }
-            if (operand) {
-                auto inst =
-                    new LoadMInstruction(use->getParent()->getParent(), temp,
-                                         fp, new MachineOperand(*operand));
-                use->getParent()->insertBefore(inst);
-            } else {
-                auto inst = new LoadMInstruction(use->getParent()->getParent(),
-                                                 temp, fp, off);
-                use->getParent()->insertBefore(inst);
-            }
+            auto inst = new LoadMInstruction(use->getParent()->getParent(),temp, fp, off);
+            use->getParent()->insertBefore(inst);
+            
         }
         for (auto def : interval->defs) {
             auto temp = new MachineOperand(*def);
-            MachineOperand* operand = nullptr;
-            MachineInstruction *inst1 = nullptr, *inst = nullptr;
-            if (interval->disp > 255 || interval->disp < -255) {
-                operand = new MachineOperand(MachineOperand::VREG,
-                                             SymbolTable::getLabel());
-                inst1 = new LoadMInstruction(def->getParent()->getParent(),
-                                             operand, off);
-                def->getParent()->insertAfter(inst1);
-            }
-            if (operand)
-                inst =
-                    new StoreMInstruction(def->getParent()->getParent(), temp,
-                                          fp, new MachineOperand(*operand));
-            else
-                inst = new StoreMInstruction(def->getParent()->getParent(),
-                                             temp, fp, off);
-            if (inst1)
-                inst1->insertAfter(inst);
-            else
-                def->getParent()->insertAfter(inst);
+            auto inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, off);
+            def->getParent()->insertAfter(inst);
         }
     }
 }
@@ -204,11 +164,15 @@ void LinearScan::genSpillCode() {
 void LinearScan::expireOldIntervals(Interval* interval) {
     auto it = active.begin();
     while (it != active.end()) {
-        if ((*it)->end >= interval->start)
-            return;
+        if((*it)->end < interval->start)
+        {
         regs.push_back((*it)->rreg);
         it = active.erase(find(active.begin(), active.end(), *it));
         sort(regs.begin(), regs.end());
+        }
+        else
+            return;
+
     }
 }
 
