@@ -1,6 +1,18 @@
 #include "MachineCode.h"
 extern FILE* yyout;
 
+void MachineInstruction::insertBefore(MachineInstruction* inst) {
+    auto& instructions = parent->getInsts();
+    auto it = std::find(instructions.begin(), instructions.end(), this);
+    instructions.insert(it, inst);
+}
+
+void MachineInstruction::insertAfter(MachineInstruction* inst) {
+    auto& instructions = parent->getInsts();
+    auto it = std::find(instructions.begin(), instructions.end(), this);
+    instructions.insert(++it, inst);
+}
+
 MachineOperand::MachineOperand(int tp, int val)
 {
     this->type = tp;
@@ -270,20 +282,47 @@ void MachineBlock::output()
 
 void MachineFunction::output()
 {
-    const char *func_name = this->sym_ptr->toStr().c_str() + 1;
-    fprintf(yyout, "\t.global %s\n", func_name);
-    fprintf(yyout, "\t.type %s , %%function\n", func_name);
-    fprintf(yyout, "%s:\n", func_name);
+     fprintf(yyout, "\t.global %s\n", this->sym_ptr->toStr().c_str() + 1);
+    fprintf(yyout, "\t.type %s , %%function\n",
+            this->sym_ptr->toStr().c_str() + 1);
+    fprintf(yyout, "%s:\n", this->sym_ptr->toStr().c_str() + 1);
     // TODO
     /* Hint:
-    *  1. Save fp
-    *  2. fp = sp
-    *  3. Save callee saved register
-    *  4. Allocate stack space for local variable */
-    
+     *  1. Save fp
+     *  2. fp = sp
+     *  3. Save callee saved register
+     *  4. Allocate stack space for local variable */
+
     // Traverse all the block in block_list to print assembly code.
-    for(auto iter : block_list)
+    auto fp = new MachineOperand(MachineOperand::REG, 11);
+    auto sp = new MachineOperand(MachineOperand::REG, 13);
+    auto lr = new MachineOperand(MachineOperand::REG, 14);
+    //(new StackMInstrcuton(nullptr, StackMInstrcuton::PUSH, getSavedRegs(), fp, lr)) ->output();
+    (new MovMInstruction(nullptr, MovMInstruction::MOV, fp, sp))->output();
+    int off = AllocSpace(0);
+    auto size = new MachineOperand(MachineOperand::IMM, off);
+    if (off < -255 || off > 255) {
+        auto r4 = new MachineOperand(MachineOperand::REG, 4);
+        (new LoadMInstruction(nullptr, r4, size))->output();
+        (new BinaryMInstruction(nullptr, BinaryMInstruction::SUB, sp, sp, r4))
+            ->output();
+    } else {
+        (new BinaryMInstruction(nullptr, BinaryMInstruction::SUB, sp, sp, size))
+            ->output();
+    }
+    int count = 0;
+    for (auto iter : block_list) {
         iter->output();
+        //count += iter->getSize();
+        if(count > 160){
+        //    fprintf(yyout, "\tb .F%d\n", parent->getN());
+            fprintf(yyout, ".LTORG\n");
+        //    parent->printGlobal();
+        //    fprintf(yyout, ".F%d:\n", parent->getN()-1);
+            count = 0;
+        }
+    }
+    fprintf(yyout, "\n");
 }
 
 void MachineUnit::PrintGlobalDecl()

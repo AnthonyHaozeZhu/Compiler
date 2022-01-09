@@ -27,19 +27,23 @@ private:
         std::set<MachineOperand *> defs;
         std::set<MachineOperand *> uses;
     };
-    MachineUnit *unit;
-    MachineFunction *func;
+    MachineUnit* unit;
+    MachineFunction* func;
+    // 暂且先认为它是可用的寄存器吧
     std::vector<int> regs;
-    std::map<MachineOperand *, std::set<MachineOperand *>> du_chains;
+    std::map<MachineOperand*, std::set<MachineOperand*>> du_chains;
     std::vector<Interval*> intervals;
-    static bool compareStart(Interval*a, Interval*b);
-    void expireOldIntervals(Interval *interval);
-    void spillAtInterval(Interval *interval);
+    std::vector<Interval*> active;
+    static bool compareStart(Interval* a, Interval* b);
+    static bool compareEnd(Interval* a, Interval* b);
+    void expireOldIntervals(Interval* interval);
+    void spillAtInterval(Interval* interval);
     void makeDuChains();
     void computeLiveIntervals();
     bool linearScanRegisterAllocation();
     void modifyCode();
     void genSpillCode();
+
 public:
     LinearScan(MachineUnit *unit);
     void allocateRegisters();
