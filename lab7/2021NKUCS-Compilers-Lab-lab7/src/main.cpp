@@ -37,15 +37,13 @@ int main(int argc, char* argv[]) {
             case 'i':
                 dump_ir = true;
                 break;
-            case 'O':
             case 'S':
                 dump_asm = true;
                 break;
             default:
-                // fprintf(stderr, "Usage: %s [-o outfile] infile\n", argv[0]);
-                // exit(EXIT_FAILURE);
+                fprintf(stderr, "Usage: %s [-o outfile] infile\n", argv[0]);
+                exit(EXIT_FAILURE);
                 dump_asm = true;
-
                 break;
         }
     }
