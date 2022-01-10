@@ -44,8 +44,8 @@
 %token ADD ASSIGN EQUAL NOT SUB MUL DIV MOD OR AND NOTEQUAL LESS GREATER LESSEQUAL GREATEREQUAL
 %token RETURN CONST
 
-%type<stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt BreakStmt ContinueStmt ReturnStmt DeclStmt FuncDef ConstDeclStmt VarDeclStmt ConstDefList VarDef ConstDef VarDefList FuncFParam FuncFParams MaybeFuncFParams BlankStmt
-%type<exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp ConstExp EqExp UnaryExp InitVal ConstInitVal InitValList ConstInitValList  FuncRParams Array
+%type<stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt BreakStmt ContinueStmt ReturnStmt DeclStmt FuncDef ConstDeclStmt VarDeclStmt ConstDefList VarDef ConstDef VarDefList FuncFParam FuncFParams FuncFParamsPlus BlankStmt
+%type<exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp ConstExp EqExp UnaryExp InitVal ConstInitVal   FuncRParams Array //InitValList ConstInitValList 
 %type<type> Type
 
 %precedence THEN
@@ -342,22 +342,27 @@ VarDef
         se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
         if(!identifiers->install($1, se))
             fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
-        // 这里要不要存值不确定
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
         $$ = new DeclStmt(new Id(se), $3);
         delete []$1;
     }
     | ID Array {
-
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::arrayType, $1, identifiers->getLevel());
+        if(!identifiers->install($1, se))
+            fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
+        $$ = new DeclStmt(new Id(se));
+        delete []$1;
     }
     ;
 ConstDef
-    : ID ASSIGN ConstInitVal {
+    : ID ASSIGN ConstInitVal 
+    {
         SymbolEntry* se;
         se = new IdentifierSymbolEntry(TypeSystem::constIntType, $1, identifiers->getLevel());
         ((IdentifierSymbolEntry*)se)->setConst();
-        if(!identifiers->install($1, se))
-            fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
+        // if(!identifiers->install($1, se))
+        //     fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
         identifiers->install($1, se);
         ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
         $$ = new DeclStmt(new Id(se), $3);
@@ -365,199 +370,192 @@ ConstDef
     }
     ;
 InitVal 
-    : Exp {
-        if(!$1->getType()->isInt()){
-            fprintf(stderr,
-                "cannot initialize a variable of type \'int\' with an rvalue "
-                "of type \'%s\'\n",
-                $1->getType()->toStr().c_str());
-        }
+    : Exp 
+    {
         $$ = $1;
-        if(!stk.empty()){
-            arrayValue[idx++] = $1->getValue();
-            Type* arrTy = stk.top()->getSymbolEntry()->getType();
-            if(arrTy == TypeSystem::intType)
-                stk.top()->addExpr($1);
-            else
-                while(arrTy){
-                    if(((ArrayType*)arrTy)->getElementType() != TypeSystem::intType){
-                        arrTy = ((ArrayType*)arrTy)->getElementType();
-                        SymbolEntry* se = new ConstantSymbolEntry(arrTy);
-                        InitValueListExpr* list = new InitValueListExpr(se);
-                        stk.top()->addExpr(list);
-                        stk.push(list);
-                    }else{
-                        stk.top()->addExpr($1);
-                        while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                            arrTy = ((ArrayType*)arrTy)->getArrayType();
-                            stk.pop();
-                        }
-                        break;
-                    }
-                }
-        }         
+        // if(!stk.empty()){
+        //     arrayValue[idx++] = $1->getValue();
+        //     Type* arrTy = stk.top()->getSymbolEntry()->getType();
+        //     if(arrTy == TypeSystem::intType)
+        //         stk.top()->addExpr($1);
+        //     else
+        //         while(arrTy){
+        //             if(((ArrayType*)arrTy)->getElementType() != TypeSystem::intType){
+        //                 arrTy = ((ArrayType*)arrTy)->getElementType();
+        //                 SymbolEntry* se = new ConstantSymbolEntry(arrTy);
+        //                 InitValueListExpr* list = new InitValueListExpr(se);
+        //                 stk.top()->addExpr(list);
+        //                 stk.push(list);
+        //             }else{
+        //                 stk.top()->addExpr($1);
+        //                 while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+        //                     arrTy = ((ArrayType*)arrTy)->getArrayType();
+        //                     stk.pop();
+        //                 }
+        //                 break;
+        //             }
+        //         }
+        // }         
     }
-    | LBRACE RBRACE {
-        SymbolEntry* se;
-        ExprNode* list;
-        if(stk.empty()){
-            // 如果只用一个{}初始化数组，那么栈一定为空
-            // 此时也没必要再加入栈了
-            memset(arrayValue, 0, arrayType->getSize());
-            idx += arrayType->getSize() / TypeSystem::intType->getSize();
-            se = new ConstantSymbolEntry(arrayType);
-            list = new InitValueListExpr(se);
-        }else{
-            // 栈不空说明肯定不是只有{}
-            // 此时需要确定{}到底占了几个元素
-            Type* type = ((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType();
-            int len = type->getSize() / TypeSystem::intType->getSize();
-            memset(arrayValue + idx, 0, type->getSize());
-            idx += len;
-            se = new ConstantSymbolEntry(type);
-            list = new InitValueListExpr(se);
-            stk.top()->addExpr(list);
-            while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                stk.pop();
-            }
-        }
-        $$ = list;
-    }
-    | LBRACE {
-        SymbolEntry* se;
-        if(!stk.empty())
-            arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
-        se = new ConstantSymbolEntry(arrayType);
-        if(arrayType->getElementType() != TypeSystem::intType){
-            arrayType = (ArrayType*)(arrayType->getElementType());
-        }
-        InitValueListExpr* expr = new InitValueListExpr(se);
-        if(!stk.empty())
-            stk.top()->addExpr(expr);
-        stk.push(expr);
-        $<exprtype>$ = expr;
-        leftCnt++;
-    } 
-      InitValList RBRACE {
-        leftCnt--;
-        while(stk.top() != $<exprtype>2 && stk.size() > (long unsigned int)(leftCnt + 1))
-            stk.pop();
-        if(stk.top() == $<exprtype>2)
-            stk.pop();
-        $$ = $<exprtype>2;
-        if(!stk.empty())
-            while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                stk.pop();
-            }
-        int size = ((ArrayType*)($$->getSymbolEntry()->getType()))->getSize()/ TypeSystem::intType->getSize();
-        while(idx % size != 0)
-            arrayValue[idx++] = 0;
-        if(!stk.empty())
-            arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
-    }
+    // | LBRACE RBRACE {
+        // SymbolEntry* se;
+        // ExprNode* list;
+        // if(stk.empty())
+        // {
+        //     memset(arrayValue, 0, arrayType->getSize());
+        //     idx += arrayType->getSize() / TypeSystem::intType->getSize();
+        //     se = new ConstantSymbolEntry(arrayType);
+        //     list = new InitValueListExpr(se);
+        // }
+        // else
+        // {
+        //     Type* type = ((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType();
+        //     int len = type->getSize() / TypeSystem::intType->getSize();
+        //     memset(arrayValue + idx, 0, type->getSize());
+        //     idx += len;
+        //     se = new ConstantSymbolEntry(type);
+        //     list = new InitValueListExpr(se);
+        //     stk.top()->addExpr(list);
+        //     while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+        //         stk.pop();
+        //     }
+        // }
+        // $$ = list;
+    // }
+    // | LBRACE {
+    //     SymbolEntry* se;
+        // if(!stk.empty())
+        //     arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
+        // se = new ConstantSymbolEntry(arrayType);
+        // if(arrayType->getElementType() != TypeSystem::intType){
+        //     arrayType = (ArrayType*)(arrayType->getElementType());
+        // }
+        // InitValueListExpr* expr = new InitValueListExpr(se);
+        // if(!stk.empty())
+        //     stk.top()->addExpr(expr);
+        // stk.push(expr);
+        // $<exprtype>$ = expr;
+        // leftCnt++;
+    // } 
+    // InitValList RBRACE {
+        // leftCnt--;
+        // while(stk.top() != $<exprtype>2 && stk.size() > (long unsigned int)(leftCnt + 1))
+        //     stk.pop();
+        // if(stk.top() == $<exprtype>2)
+        //     stk.pop();
+        // $$ = $<exprtype>2;
+        // if(!stk.empty())
+        //     while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+        //         stk.pop();
+        //     }
+        // int size = ((ArrayType*)($$->getSymbolEntry()->getType()))->getSize()/ TypeSystem::intType->getSize();
+        // while(idx % size != 0)
+        //     arrayValue[idx++] = 0;
+        // if(!stk.empty())
+        //     arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
+    // }
     ;
 
 ConstInitVal
     : ConstExp {
         $$ = $1;
-        if(!stk.empty()){
-            arrayValue[idx++] = $1->getValue();
-            Type* arrTy = stk.top()->getSymbolEntry()->getType();
-            if(arrTy == TypeSystem::constIntType)
-                stk.top()->addExpr($1);
-            else
-                while(arrTy){
-                    if(((ArrayType*)arrTy)->getElementType() != TypeSystem::constIntType){
-                        arrTy = ((ArrayType*)arrTy)->getElementType();
-                        SymbolEntry* se = new ConstantSymbolEntry(arrTy);
-                        InitValueListExpr* list = new InitValueListExpr(se);
-                        stk.top()->addExpr(list);
-                        stk.push(list);
-                    }else{
-                        stk.top()->addExpr($1);
-                        while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                            arrTy = ((ArrayType*)arrTy)->getArrayType();
-                            stk.pop();
-                        }
-                        break;
-                    }
-                }
-        }
+        // if(!stk.empty()){
+        //     arrayValue[idx++] = $1->getValue();
+        //     Type* arrTy = stk.top()->getSymbolEntry()->getType();
+        //     if(arrTy == TypeSystem::constIntType)
+        //         stk.top()->addExpr($1);
+        //     else
+        //         while(arrTy){
+        //             if(((ArrayType*)arrTy)->getElementType() != TypeSystem::constIntType){
+        //                 arrTy = ((ArrayType*)arrTy)->getElementType();
+        //                 SymbolEntry* se = new ConstantSymbolEntry(arrTy);
+        //                 InitValueListExpr* list = new InitValueListExpr(se);
+        //                 stk.top()->addExpr(list);
+        //                 stk.push(list);
+        //             }else{
+        //                 stk.top()->addExpr($1);
+        //                 while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+        //                     arrTy = ((ArrayType*)arrTy)->getArrayType();
+        //                     stk.pop();
+        //                 }
+        //                 break;
+        //             }
+        //         }
+        // }
     }
-    | LBRACE RBRACE {
-        SymbolEntry* se;
-        ExprNode* list;
-        if(stk.empty()){
-            // 如果只用一个{}初始化数组，那么栈一定为空
-            // 此时也没必要再加入栈了
-            memset(arrayValue, 0, arrayType->getSize());
-            idx += arrayType->getSize() / TypeSystem::constIntType->getSize();
-            se = new ConstantSymbolEntry(arrayType);
-            list = new InitValueListExpr(se);
-        }else{
-            // 栈不空说明肯定不是只有{}
-            // 此时需要确定{}到底占了几个元素
-            Type* type = ((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType();
-            int len = type->getSize() / TypeSystem::constIntType->getSize();
-            memset(arrayValue + idx, 0, type->getSize());
-            idx += len;
-            se = new ConstantSymbolEntry(type);
-            list = new InitValueListExpr(se);
-            stk.top()->addExpr(list);
-            while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                stk.pop();
-            }
-        }
-        $$ = list;
-    }
-    | LBRACE {
-        SymbolEntry* se;
-        if(!stk.empty())
-            arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
-        se = new ConstantSymbolEntry(arrayType);
-        if(arrayType->getElementType() != TypeSystem::intType){
-            arrayType = (ArrayType*)(arrayType->getElementType());
-        }
-        InitValueListExpr* expr = new InitValueListExpr(se);
-        if(!stk.empty())
-            stk.top()->addExpr(expr);
-        stk.push(expr);
-        $<exprtype>$ = expr;
-        leftCnt++;
-    } 
-      ConstInitValList RBRACE {
-        leftCnt--;
-        while(stk.top() != $<exprtype>2 && stk.size() > (long unsigned int)(leftCnt + 1))
-            stk.pop();
-        if(stk.top() == $<exprtype>2)
-            stk.pop();
-        $$ = $<exprtype>2;
-        if(!stk.empty())
-            while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
-                stk.pop();
-            }
-        while(idx % (((ArrayType*)($$->getSymbolEntry()->getType()))->getSize()/ sizeof(int)) !=0 )
-            arrayValue[idx++] = 0;
-        if(!stk.empty())
-            arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
-    }
+    // | LBRACE RBRACE {
+    //     SymbolEntry* se;
+    //     ExprNode* list;
+    //     if(stk.empty())
+    //     {
+    //         memset(arrayValue, 0, arrayType->getSize());
+    //         idx += arrayType->getSize() / TypeSystem::constIntType->getSize();
+    //         se = new ConstantSymbolEntry(arrayType);
+    //         list = new InitValueListExpr(se);
+    //     }
+    //     else
+    //     {
+    //         Type* type = ((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType();
+    //         int len = type->getSize() / TypeSystem::constIntType->getSize();
+    //         memset(arrayValue + idx, 0, type->getSize());
+    //         idx += len;
+    //         se = new ConstantSymbolEntry(type);
+    //         list = new InitValueListExpr(se);
+    //         stk.top()->addExpr(list);
+    //         while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+    //             stk.pop();
+    //         }
+    //     }
+    //     $$ = list;
+    // }
+    // | LBRACE {
+    //     SymbolEntry* se;
+    //     if(!stk.empty())
+    //         arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
+    //     se = new ConstantSymbolEntry(arrayType);
+    //     if(arrayType->getElementType() != TypeSystem::intType){
+    //         arrayType = (ArrayType*)(arrayType->getElementType());
+    //     }
+    //     InitValueListExpr* expr = new InitValueListExpr(se);
+    //     if(!stk.empty())
+    //         stk.top()->addExpr(expr);
+    //     stk.push(expr);
+    //     $<exprtype>$ = expr;
+    //     leftCnt++;
+    // } 
+    // ConstInitValList RBRACE {
+    //     leftCnt--;
+    //     while(stk.top() != $<exprtype>2 && stk.size() > (long unsigned int)(leftCnt + 1))
+    //         stk.pop();
+    //     if(stk.top() == $<exprtype>2)
+    //         stk.pop();
+    //     $$ = $<exprtype>2;
+    //     if(!stk.empty())
+    //         while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt){
+    //             stk.pop();
+    //         }
+    //     while(idx % (((ArrayType*)($$->getSymbolEntry()->getType()))->getSize()/ sizeof(int)) !=0 )
+    //         arrayValue[idx++] = 0;
+    //     if(!stk.empty())
+    //         arrayType = (ArrayType*)(((ArrayType*)(stk.top()->getSymbolEntry()->getType()))->getElementType());
+    // }
     ;
-InitValList
-    : InitVal {
-        $$ = $1;
-    }
-    | InitValList COMMA InitVal {
-        $$ = $1;
-    }
-    ;
-ConstInitValList
-    : ConstInitVal {
-        $$ = $1;
-    }
-    | ConstInitValList COMMA ConstInitVal {
-        $$ = $1;
-    }
-    ;
+// InitValList
+//     : InitVal {
+//         $$ = $1;
+//     }
+//     | InitValList COMMA InitVal {
+//         $$ = $1;
+//     }
+//     ;
+// ConstInitValList
+//     : ConstInitVal {
+//         $$ = $1;
+//     }
+//     | ConstInitValList COMMA ConstInitVal {
+//         $$ = $1;
+//     }
+//     ;
 FuncDef
     :
     Type ID {
@@ -565,7 +563,7 @@ FuncDef
         identifiers = new SymbolTable(identifiers);
         paramNo = 0;
     }
-    LPAREN MaybeFuncFParams RPAREN {
+    LPAREN FuncFParamsPlus RPAREN {
         Type* funcType;
         std::vector<Type*> vec;
         std::vector<SymbolEntry*> vec1;
@@ -590,7 +588,7 @@ FuncDef
         delete []$2;
     }
     ;
-MaybeFuncFParams
+FuncFParamsPlus
     : FuncFParams {$$ = $1;}
     | %empty {$$ = nullptr;}
 FuncFParams
