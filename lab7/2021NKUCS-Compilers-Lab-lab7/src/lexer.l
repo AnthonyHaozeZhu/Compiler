@@ -30,200 +30,99 @@ BLOCKCOMMENTEND \*\/
 LINECOMMENT \/\/[^\n]*
 %%
 "int" {
-    /*
-    * Questions: 
-    *   Q1: Why we need to return INT in further labs?
-    *   Q2: What is "INT" actually?
-    */
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("INT\tint");
-    chars += strlen("int");
     return INT;
 }
 "void" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("VOID\tvoid");
-    chars += strlen("void");
     return VOID;
 }
 "const" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("CONST\tconst");
-    chars += strlen("const");
     return CONST;
 }
 "if" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("IF\tif");
-    chars += strlen("if");
     return IF;
 };
 "else" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ELSE\telse");
-    chars += strlen("else");
     return ELSE;
 };
 "return" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RETURN\treturn");
-    chars += strlen("return");
     return RETURN;
 }
 "while" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("WHILE\twhile");
-    chars += strlen("while");
     return WHILE;
 }
 "break" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("BREAK\tbreak");
-    chars += strlen("break");
     return BREAK;
 }
 "continue" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("CONTINUE\tcontinue");
-    chars += strlen("continue");
     return CONTINUE;
 }
 "==" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("EQUAL\t==");
-    chars += strlen("==");
     return EQUAL;
 }
 "!=" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("NOTEQUAL\t!=");
-    chars += strlen("!=");
     return NOTEQUAL;
 }
 "=" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ASSIGN\t=");
-    chars += strlen("=");
     return ASSIGN;
 }
 "<" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LESS\t<");
-    chars += strlen("<");
     return LESS;
 }
 "<=" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LESSEQUAL\t<");
-    chars += strlen("<=");
     return LESSEQUAL;
 }
 ">" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("GREATER\t<");
-    chars += strlen(">");
     return GREATER;
 }
 ">=" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("GREATEREQUAL\t<");
-    chars += strlen(">=");
     return GREATEREQUAL;
 }
 "+" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("ADD\t+");
-    chars += strlen("+");
     return ADD;
 }
 "-" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("SUB\t-");
-    chars += strlen("-");
     return SUB;
 }
 "*" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("MUL\t*");
-    chars += strlen("*");
     return MUL;
 }
 "/" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("DIV\t/");
-    chars += strlen("/");
     return DIV;
 }
 "%" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("MOD\t%");
-    chars += strlen("%");
     return MOD;
 }
 "&&" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("AND\t&&");
-    chars += strlen("&&");
     return AND;
 }
 "||" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("OR\t||");
-    chars += strlen("||");
     return OR;
 }
 "!" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("NOT\t!");
-    chars += strlen("!");
     return NOT;
 }
 ";" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("SEMICOLON\t;");
-    chars += strlen(";");
     return SEMICOLON;
 }
 "(" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LPAREN\t(");
-    chars += strlen("(");
     return LPAREN;
 }
 ")" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RPAREN\t)");
-    chars += strlen(")");
     return RPAREN;
 }
 "{" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LBRACE\t{");
-    chars += strlen("{");
     return LBRACE;
 }
 "}" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RBRACE\t}");
-    chars += strlen("}");
     return RBRACE;
 }
 "[" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("LBRACKET\t[");
-    chars += strlen("[");
     return LBRACKET;
 }
 "]" {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("RBRACKET\t}");
-    chars += strlen("]");
     return RBRACKET;
 }
 "," {
-    if(dump_tokens)
-        DEBUG_FOR_LAB4("COMMA\t,");
-    chars += strlen(",");
     return COMMA;
 }
 {DECIMIAL} {
