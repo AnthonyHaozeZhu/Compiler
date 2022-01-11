@@ -10,4 +10,4 @@ parser.h
 *.log
 *.bin
 *.s
-exapmle.cpp
+example.cpp
