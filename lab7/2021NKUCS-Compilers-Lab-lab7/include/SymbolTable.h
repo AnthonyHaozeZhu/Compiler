@@ -9,15 +9,13 @@ class Type;
 class Operand;
 
 class SymbolEntry {
-   private:
+private:
     int kind;
     SymbolEntry* next;
-
-   protected:
+protected:
     enum { CONSTANT, VARIABLE, TEMPORARY };
     Type* type;
-
-   public:
+public:
     SymbolEntry(Type* type, int kind);
     virtual ~SymbolEntry(){};
     bool isConstant() const { return kind == CONSTANT; };
@@ -28,19 +26,17 @@ class SymbolEntry {
     virtual std::string toStr() = 0;
     bool setNext(SymbolEntry* se);
     SymbolEntry* getNext() const { return next; };
-
     // You can add any function you need here.
 };
 
 // symbol table managing identifier symbol entries
 class SymbolTable {
-   private:
+private:
     std::map<std::string, SymbolEntry*> symbolTable;
     SymbolTable* prev;
     int level;
     static int counter;
-
-   public:
+public:
     SymbolTable();
     SymbolTable(SymbolTable* prev);
     bool install(std::string name, SymbolEntry* entry);
@@ -59,11 +55,10 @@ class SymbolTable {
     Compiler should create constant symbol entry for literal constant '1'.
 */
 class ConstantSymbolEntry : public SymbolEntry {
-   private:
+private:
     int value;
     std::string strValue;
-
-   public:
+public:
     ConstantSymbolEntry(Type* type, int value);
     ConstantSymbolEntry(Type* type, std::string strValue);
     ConstantSymbolEntry(Type* type);
@@ -97,7 +92,7 @@ class ConstantSymbolEntry : public SymbolEntry {
     | e        | LOCAL +1 |
 */
 class IdentifierSymbolEntry : public SymbolEntry {
-   private:
+private:
     enum { GLOBAL, PARAM, LOCAL };
     std::string name;
     int scope;
@@ -111,8 +106,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
     bool constant;
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
-
-   public:
+public:
     IdentifierSymbolEntry(Type* type,
                           std::string name,
                           int scope,
