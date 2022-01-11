@@ -15,21 +15,19 @@ class Instruction;
 class IRBuilder;
 
 
-class Node {
-   private:
+class Node 
+{
+private:
     static int counter;
     int seq;
     Node* next;
-
-   protected:
+protected:
     std::vector<Instruction*> true_list;
     std::vector<Instruction*> false_list;
     static IRBuilder* builder;
     void backPatch(std::vector<Instruction*>& list, BasicBlock* bb);
-    std::vector<Instruction*> merge(std::vector<Instruction*>& list1,
-                                    std::vector<Instruction*>& list2);
-
-   public:
+    std::vector<Instruction*> merge(std::vector<Instruction*>& list1, std::vector<Instruction*>& list2);
+public:
     Node();
     int getSeq() const { return seq; };
     static void setIRBuilder(IRBuilder* ib) { builder = ib; };
@@ -42,18 +40,17 @@ class Node {
     std::vector<Instruction*>& falseList() { return false_list; }
 };
 
-class ExprNode : public Node {
-   private:
+class ExprNode : public Node 
+{
+private:
     int kind;
-
-   protected:
+protected:
     enum { EXPR, INITVALUELISTEXPR, IMPLICTCASTEXPR, UNARYEXPR };
     Type* type;
     SymbolEntry* symbolEntry;
     Operand* dst;  // The result of the subtree is stored into dst.
-   public:
-    ExprNode(SymbolEntry* symbolEntry, int kind = EXPR)
-        : kind(kind), symbolEntry(symbolEntry){};
+public:
+    ExprNode(SymbolEntry* symbolEntry, int kind = EXPR) : kind(kind), symbolEntry(symbolEntry){};
     Operand* getOperand() { return dst; };
     void output(int level);
     virtual int getValue() { return -1; };
@@ -68,27 +65,13 @@ class ExprNode : public Node {
     Type* getOriginType() { return type; };
 };
 
-class BinaryExpr : public ExprNode {
-   private:
+class BinaryExpr : public ExprNode 
+{
+private:
     int op;
     ExprNode *expr1, *expr2;
-
-   public:
-    enum {
-        ADD,
-        SUB,
-        MUL,
-        DIV,
-        MOD,
-        AND,
-        OR,
-        LESS,
-        LESSEQUAL,
-        GREATER,
-        GREATEREQUAL,
-        EQUAL,
-        NOTEQUAL
-    };
+public:
+    enum {ADD, SUB, MUL, DIV, MOD, AND, OR, LESS, LESSEQUAL, GREATER, GREATEREQUAL, EQUAL, NOTEQUAL};
     BinaryExpr(SymbolEntry* se, int op, ExprNode* expr1, ExprNode* expr2);
     void output(int level);
     int getValue();
@@ -96,12 +79,12 @@ class BinaryExpr : public ExprNode {
     void genCode();
 };
 
-class UnaryExpr : public ExprNode {
-   private:
+class UnaryExpr : public ExprNode 
+{
+private:
     int op;
     ExprNode* expr;
-
-   public:
+public:
     enum { NOT, SUB };
     UnaryExpr(SymbolEntry* se, int op, ExprNode* expr);
     void output(int level);
@@ -112,20 +95,22 @@ class UnaryExpr : public ExprNode {
     void setType(Type* type) { this->type = type; }
 };
 
-class CallExpr : public ExprNode {
-   private:
+class CallExpr : public ExprNode 
+{
+private:
     ExprNode* param;
-
-   public:
+public:
     CallExpr(SymbolEntry* se, ExprNode* param = nullptr);
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class Constant : public ExprNode {
-   public:
-    Constant(SymbolEntry* se) : ExprNode(se) {
+class Constant : public ExprNode 
+{
+public:
+    Constant(SymbolEntry* se) : ExprNode(se) 
+    {
         dst = new Operand(se);
         type = TypeSystem::intType;
     };
@@ -135,19 +120,19 @@ class Constant : public ExprNode {
     void genCode();
 };
 
-class Id : public ExprNode {
-   private:
+class Id : public ExprNode 
+{
+private:
     ExprNode* arrIdx;
     bool left = false;
-
-   public:
-    Id(SymbolEntry* se, ExprNode* arrIdx = nullptr)
-        : ExprNode(se), arrIdx(arrIdx) {
-        if (se) {
+public:
+    Id(SymbolEntry* se, ExprNode* arrIdx = nullptr) : ExprNode(se), arrIdx(arrIdx) {
+        if (se) 
+        {
             type = se->getType();
-            if (type->isInt()) {
-                SymbolEntry* temp = new TemporarySymbolEntry(
-                    TypeSystem::intType, SymbolTable::getLabel());
+            if (type->isInt()) 
+            {
+                SymbolEntry* temp = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
                 dst = new Operand(temp);
             } 
         }
@@ -162,20 +147,21 @@ class Id : public ExprNode {
     void setLeft() { left = true; }
 };
 
-class ImplicitValueInitExpr : public ExprNode {
-   public:
+class ImplicitValueInitExpr : public ExprNode 
+{
+public:
     ImplicitValueInitExpr(SymbolEntry* se) : ExprNode(se){};
     void output(int level);
 };
 
-class InitValueListExpr : public ExprNode {
-   private:
+class InitValueListExpr : public ExprNode 
+{
+private:
     ExprNode* expr;
     int childCnt;
-
-   public:
-    InitValueListExpr(SymbolEntry* se, ExprNode* expr = nullptr)
-        : ExprNode(se, INITVALUELISTEXPR), expr(expr) {
+public:
+    InitValueListExpr(SymbolEntry* se, ExprNode* expr = nullptr) : ExprNode(se, INITVALUELISTEXPR), expr(expr) 
+    {
         type = se->getType();
         childCnt = 0;
     };
@@ -190,13 +176,13 @@ class InitValueListExpr : public ExprNode {
 };
 
 // 仅用于int2bool
-class ImplictCastExpr : public ExprNode {
-   private:
+class ImplictCastExpr : public ExprNode 
+{
+private:
     ExprNode* expr;
-
-   public:
-    ImplictCastExpr(ExprNode* expr)
-        : ExprNode(nullptr, IMPLICTCASTEXPR), expr(expr) {
+public:
+    ImplictCastExpr(ExprNode* expr) : ExprNode(nullptr, IMPLICTCASTEXPR), expr(expr) 
+    {
         type = TypeSystem::boolType;
         dst = new Operand(
             new TemporarySymbolEntry(type, SymbolTable::getLabel()));
@@ -206,48 +192,51 @@ class ImplictCastExpr : public ExprNode {
     bool typeCheck(Type* retType = nullptr) { return false; };
     void genCode();
 };
-class StmtNode : public Node {
-   private:
+
+class StmtNode : public Node 
+{
+private:
     int kind;
-
-   protected:
+protected:
     enum { IF, IFELSE, WHILE, COMPOUND, RETURN };
-
-   public:
+public:
     StmtNode(int kind = -1) : kind(kind){};
     bool isIf() const { return kind == IF; };
     virtual bool typeCheck(Type* retType = nullptr) = 0;
 };
-class CompoundStmt : public StmtNode {
-   private:
-    StmtNode* stmt;
 
-   public:
+class CompoundStmt : public StmtNode 
+{
+private:
+    StmtNode* stmt;
+public:
     CompoundStmt(StmtNode* stmt = nullptr) : stmt(stmt){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class SeqNode : public StmtNode {
-   private:
+class SeqNode : public StmtNode 
+{
+private:
     StmtNode *stmt1, *stmt2;
-
-   public:
+public:
     SeqNode(StmtNode* stmt1, StmtNode* stmt2) : stmt1(stmt1), stmt2(stmt2){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class DeclStmt : public StmtNode {
-   private:
+class DeclStmt : public StmtNode 
+{
+private:
     Id* id;
     ExprNode* expr;
-
-   public:
-    DeclStmt(Id* id, ExprNode* expr = nullptr) : id(id) {
-        if (expr) {
+public:
+    DeclStmt(Id* id, ExprNode* expr = nullptr) : id(id) 
+    {
+        if (expr) 
+        {
             this->expr = expr;
             if (expr->isInitValueListExpr())
                 ((InitValueListExpr*)(this->expr))->fill();
@@ -259,23 +248,25 @@ class DeclStmt : public StmtNode {
     Id* getId() { return id; };
 };
 
-class BlankStmt : public StmtNode {
-   public:
+class BlankStmt : public StmtNode 
+{
+public:
     BlankStmt(){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class IfStmt : public StmtNode {
-   private:
+class IfStmt : public StmtNode 
+{
+private:
     ExprNode* cond;
     StmtNode* thenStmt;
-
-   public:
-    IfStmt(ExprNode* cond, StmtNode* thenStmt)
-        : cond(cond), thenStmt(thenStmt) {
-        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+public:
+    IfStmt(ExprNode* cond, StmtNode* thenStmt) : cond(cond), thenStmt(thenStmt) 
+    {
+        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) 
+        {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
         }
@@ -285,16 +276,18 @@ class IfStmt : public StmtNode {
     void genCode();
 };
 
-class IfElseStmt : public StmtNode {
-   private:
+class IfElseStmt : public StmtNode 
+{
+private:
     ExprNode* cond;
     StmtNode* thenStmt;
     StmtNode* elseStmt;
-
-   public:
+public:
     IfElseStmt(ExprNode* cond, StmtNode* thenStmt, StmtNode* elseStmt)
-        : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) {
-        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+        : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) 
+        {
+        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) 
+        {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
         }
@@ -304,15 +297,18 @@ class IfElseStmt : public StmtNode {
     void genCode();
 };
 
-class WhileStmt : public StmtNode {
-   private:
+class WhileStmt : public StmtNode 
+{
+private:
     ExprNode* cond;
     StmtNode* stmt;
     BasicBlock* cond_bb;
     BasicBlock* end_bb;
-   public:
-    WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr) : cond(cond), stmt(stmt) {
-        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+public:
+    WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr) : cond(cond), stmt(stmt) 
+    {
+        if (cond->getType()->isInt() && cond->getType()->getSize() == 32) 
+        {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
         }
@@ -325,79 +321,81 @@ class WhileStmt : public StmtNode {
     BasicBlock* get_end_bb(){return this->end_bb;};
 };
 
-class BreakStmt : public StmtNode {
-    private:
+class BreakStmt : public StmtNode 
+{
+private:
     StmtNode * whileStmt;
-   public:
+public:
     BreakStmt(StmtNode* whileStmt){this->whileStmt=whileStmt;};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class ContinueStmt : public StmtNode {
-    private:
+class ContinueStmt : public StmtNode 
+{
+private:
     StmtNode *whileStmt;
-   public:
+public:
     ContinueStmt(StmtNode* whileStmt){this->whileStmt=whileStmt;};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class ReturnStmt : public StmtNode {
-   private:
+class ReturnStmt : public StmtNode 
+{
+private:
     ExprNode* retValue;
-
-   public:
+public:
     ReturnStmt(ExprNode* retValue = nullptr) : retValue(retValue){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class AssignStmt : public StmtNode {
-   private:
+class AssignStmt : public StmtNode
+{
+private:
     ExprNode* lval;
     ExprNode* expr;
-
-   public:
+public:
     AssignStmt(ExprNode* lval, ExprNode* expr);
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class ExprStmt : public StmtNode {
-   private:
+class ExprStmt : public StmtNode 
+{
+private:
     ExprNode* expr;
-
-   public:
+public:
     ExprStmt(ExprNode* expr) : expr(expr){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class FunctionDef : public StmtNode {
-   private:
+class FunctionDef : public StmtNode 
+{
+private:
     SymbolEntry* se;
     DeclStmt* decl;
     StmtNode* stmt;
-
-   public:
-    FunctionDef(SymbolEntry* se, DeclStmt* decl, StmtNode* stmt)
-        : se(se), decl(decl), stmt(stmt){};
+public:
+    FunctionDef(SymbolEntry* se, DeclStmt* decl, StmtNode* stmt) : se(se), decl(decl), stmt(stmt){};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
     SymbolEntry* getSymbolEntry() { return se; };
 };
 
-class Ast {
-   private:
+class Ast 
+{
+private:
     Node* root;
-   public:
+public:
     Ast() { root = nullptr; }
     void setRoot(Node* n) { root = n; }
     void output();
