@@ -367,7 +367,7 @@ VarDef
         
         //存入数组维度大小
         temp = new ArrayType(type, $2 -> getValue());
-        std::cout << $2 -> getValue() << ' ';
+        //std::cout << $2 -> getValue() << ' ';
         arrayType = (ArrayType*)temp;
         se = new IdentifierSymbolEntry(temp, $1, identifiers->getLevel());
         ((IdentifierSymbolEntry*)se)->setAllZero();

@@ -10,7 +10,7 @@
 class BasicBlock;
 
 class Instruction {
-   public:
+public:
     Instruction(unsigned instType, BasicBlock* insert_bb = nullptr);
     virtual ~Instruction();
     BasicBlock* getParent();
@@ -38,35 +38,22 @@ class Instruction {
     Instruction* next;
     BasicBlock* parent;
     std::vector<Operand*> operands;
-    enum {
-        BINARY,
-        COND,
-        UNCOND,
-        RET,
-        LOAD,
-        STORE,
-        CMP,
-        ALLOCA,
-        CALL,
-        ZEXT,
-        XOR,
-        GEP
-    };
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA, CALL, ZEXT, XOR, GEP};
 };
 
 // meaningless instruction, used as the head node of the instruction list.
-class DummyInstruction : public Instruction {
-   public:
+class DummyInstruction : public Instruction 
+{
+public:
     DummyInstruction() : Instruction(-1, nullptr){};
     void output() const {};
     void genMachineCode(AsmBuilder*){};
 };
 
-class AllocaInstruction : public Instruction {
-   public:
-    AllocaInstruction(Operand* dst,
-                      SymbolEntry* se,
-                      BasicBlock* insert_bb = nullptr);
+class AllocaInstruction : public Instruction 
+{
+public:
+    AllocaInstruction(Operand* dst, SymbolEntry* se, BasicBlock* insert_bb = nullptr);
     ~AllocaInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
@@ -75,41 +62,37 @@ class AllocaInstruction : public Instruction {
     SymbolEntry* se;
 };
 
-class LoadInstruction : public Instruction {
-   public:
-    LoadInstruction(Operand* dst,
-                    Operand* src_addr,
-                    BasicBlock* insert_bb = nullptr);
+class LoadInstruction : public Instruction 
+{
+public:
+    LoadInstruction(Operand* dst, Operand* src_addr, BasicBlock* insert_bb = nullptr);
     ~LoadInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };
 
-class StoreInstruction : public Instruction {
-   public:
-    StoreInstruction(Operand* dst_addr,
-                     Operand* src,
-                     BasicBlock* insert_bb = nullptr);
+class StoreInstruction : public Instruction 
+{
+public:
+    StoreInstruction(Operand* dst_addr, Operand* src, BasicBlock* insert_bb = nullptr);
     ~StoreInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };
 
-class BinaryInstruction : public Instruction {
-   public:
-    BinaryInstruction(unsigned opcode,
-                      Operand* dst,
-                      Operand* src1,
-                      Operand* src2,
-                      BasicBlock* insert_bb = nullptr);
+class BinaryInstruction : public Instruction 
+{
+public:
+    BinaryInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr);
     ~BinaryInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
     enum { SUB, ADD, AND, OR, MUL, DIV, MOD };
 };
 
-class CmpInstruction : public Instruction {
-   public:
+class CmpInstruction : public Instruction 
+{
+public:
     CmpInstruction(unsigned opcode,
                    Operand* dst,
                    Operand* src1,
@@ -122,8 +105,9 @@ class CmpInstruction : public Instruction {
 };
 
 // unconditional branch
-class UncondBrInstruction : public Instruction {
-   public:
+class UncondBrInstruction : public Instruction 
+{
+public:
     UncondBrInstruction(BasicBlock*, BasicBlock* insert_bb = nullptr);
     void output() const;
     void setBranch(BasicBlock*);
@@ -135,12 +119,10 @@ class UncondBrInstruction : public Instruction {
 };
 
 // conditional branch
-class CondBrInstruction : public Instruction {
-   public:
-    CondBrInstruction(BasicBlock*,
-                      BasicBlock*,
-                      Operand*,
-                      BasicBlock* insert_bb = nullptr);
+class CondBrInstruction : public Instruction 
+{
+public:
+    CondBrInstruction(BasicBlock*, BasicBlock*, Operand*, BasicBlock* insert_bb = nullptr);
     ~CondBrInstruction();
     void output() const;
     void setTrueBranch(BasicBlock*);
@@ -148,37 +130,35 @@ class CondBrInstruction : public Instruction {
     void setFalseBranch(BasicBlock*);
     BasicBlock* getFalseBranch();
     void genMachineCode(AsmBuilder*);
-
-   protected:
+protected:
     BasicBlock* true_branch;
     BasicBlock* false_branch;
 };
 
-class RetInstruction : public Instruction {
-   public:
+class RetInstruction : public Instruction 
+{
+public:
     RetInstruction(Operand* src, BasicBlock* insert_bb = nullptr);
     ~RetInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };
 
-class CallInstruction : public Instruction {
-   private:
+class CallInstruction : public Instruction 
+{
+private:
     SymbolEntry* func;
     Operand* dst;
-
-   public:
-    CallInstruction(Operand* dst,
-                    SymbolEntry* func,
-                    std::vector<Operand*> params,
-                    BasicBlock* insert_bb = nullptr);
+public:
+    CallInstruction(Operand* dst, SymbolEntry* func, std::vector<Operand*> params, BasicBlock* insert_bb = nullptr);
     ~CallInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };
 
-class ZextInstruction : public Instruction {
-   public:
+class ZextInstruction : public Instruction 
+{
+public:
     ZextInstruction(Operand* dst,
                     Operand* src,
                     BasicBlock* insert_bb = nullptr);
@@ -187,27 +167,25 @@ class ZextInstruction : public Instruction {
     void genMachineCode(AsmBuilder*);
 };
 
-class XorInstruction : public Instruction {
-   public:
+class XorInstruction : public Instruction 
+{
+public:
     XorInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
     ~XorInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
 };
 
-class GepInstruction : public Instruction {
-   private:
+class GepInstruction : public Instruction 
+{
+private:
     bool paramFirst;
     bool first;
     bool last;
     Operand* init;
 
-   public:
-    GepInstruction(Operand* dst,
-                   Operand* arr,
-                   Operand* idx,
-                   BasicBlock* insert_bb = nullptr,
-                   bool paramFirst = false);
+public:
+    GepInstruction(Operand* dst, Operand* arr, Operand* idx, BasicBlock* insert_bb = nullptr, bool paramFirst = false);
     ~GepInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);

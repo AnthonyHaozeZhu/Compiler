@@ -107,11 +107,7 @@ private:
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
 public:
-    IdentifierSymbolEntry(Type* type,
-                          std::string name,
-                          int scope,
-                          int paramNo = -1,
-                          bool sysy = false);
+    IdentifierSymbolEntry(Type* type, std::string name, int scope, int paramNo = -1, bool sysy = false);
     virtual ~IdentifierSymbolEntry(){};
     std::string toStr();
     bool isGlobal() const { return scope == GLOBAL; };
