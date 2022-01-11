@@ -69,7 +69,7 @@ private:
 public:
     ArrayType(Type* elementType, int length, bool constant = false) : Type(Type::ARRAY), elementType(elementType), length(length), constant(constant)
     {
-        size = elementType->getSize() * length;
+        size = elementType -> getSize() * length;
     };
     std::string toStr();
     int getLength() const { return length; };
