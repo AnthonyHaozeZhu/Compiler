@@ -61,8 +61,6 @@ int main(int argc, char* argv[]) {
         exit(EXIT_FAILURE);
     }
     yyparse();
-    if (dump_ast)
-        ast.output();
     ast.genCode(&unit);
     if (dump_ir)
         unit.output();
