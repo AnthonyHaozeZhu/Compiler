@@ -311,8 +311,6 @@ void Id::genCode()
     {
         if (arrIdx) 
         {
-    {        
-        {
             Type* type = ((ArrayType*)(this->type))->getElementType();
             Type* type1 = this->type;
             Operand* tempSrc = addr;
@@ -323,15 +321,7 @@ void Id::genCode()
             bool firstFlag = true;
             while (true) 
             {
-    {        
-            {
                 if (((ArrayType*)type1)->getLength() == -1) 
-                {
-    {        
-                {
-    {        
-                {
-    {        
                 {
                     Operand* dst1 = new Operand(new TemporarySymbolEntry(
                         new PointerType(type), SymbolTable::getLabel()));
@@ -375,16 +365,6 @@ void Id::genCode()
                 dst = dst1;
             }
 
-        } 
-}
-        } 
-}
-        } 
-}
-        } 
-}
-        } 
-}
         } 
         else 
         {
