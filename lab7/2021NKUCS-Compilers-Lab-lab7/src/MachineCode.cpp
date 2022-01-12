@@ -5,7 +5,8 @@ extern FILE* yyout;
 
 int MachineBlock::label = 0;
 
-MachineOperand::MachineOperand(int tp, int val) {
+MachineOperand::MachineOperand(int tp, int val) 
+{
     this->type = tp;
     if (tp == MachineOperand::IMM)
         this->val = val;
@@ -13,12 +14,14 @@ MachineOperand::MachineOperand(int tp, int val) {
         this->reg_no = val;   
 }
 
-MachineOperand::MachineOperand(std::string label) {
+MachineOperand::MachineOperand(std::string label) 
+{
     this->type = MachineOperand::LABEL;
     this->label = label;
 }
 
-bool MachineOperand::operator==(const MachineOperand& a) const {
+bool MachineOperand::operator==(const MachineOperand& a) const 
+{
     if (this->type != a.type)
         return false;
     if (this->type == IMM)
@@ -26,7 +29,8 @@ bool MachineOperand::operator==(const MachineOperand& a) const {
     return this->reg_no == a.reg_no;
 }
 
-bool MachineOperand::operator<(const MachineOperand& a) const {
+bool MachineOperand::operator<(const MachineOperand& a) const 
+{
     if (this->type == a.type) {
         if (this->type == IMM)
             return this->val < a.val;
@@ -63,7 +67,8 @@ void MachineOperand::PrintReg()
     }
 }
 
-void MachineOperand::output() {
+void MachineOperand::output() 
+{
     /* HINT：print operand
      * Example:
      * immediate num 1 -> print #1;
@@ -91,7 +96,8 @@ void MachineOperand::output() {
     }
 }
 
-void MachineInstruction::PrintCond() {
+void MachineInstruction::PrintCond() 
+{
     switch (cond) {
         case EQ:
             fprintf(yyout, "eq");          //仿照给的样例LT把其他条件写出
@@ -116,20 +122,22 @@ void MachineInstruction::PrintCond() {
     }
 }
 
-void MachineInstruction::insertBefore(MachineInstruction* inst) {
+void MachineInstruction::insertBefore(MachineInstruction* inst) 
+{
     auto& instructions = parent->getInsts();
     auto it = std::find(instructions.begin(), instructions.end(), this);
     instructions.insert(it, inst);
 }
 
-void MachineInstruction::insertAfter(MachineInstruction* inst) {
+void MachineInstruction::insertAfter(MachineInstruction* inst) 
+{
     auto& instructions = parent->getInsts();
     auto it = std::find(instructions.begin(), instructions.end(), this);
     instructions.insert(++it, inst);
 }
 
-BinaryMInstruction::BinaryMInstruction(MachineBlock* p, int op, MachineOperand* dst,
-    MachineOperand* src1,MachineOperand* src2,int cond) {
+BinaryMInstruction::BinaryMInstruction(MachineBlock* p, int op, MachineOperand* dst, MachineOperand* src1,MachineOperand* src2,int cond) 
+{
     this->parent = p;
     this->type = MachineInstruction::BINARY;
     this->op = op;
@@ -144,10 +152,10 @@ BinaryMInstruction::BinaryMInstruction(MachineBlock* p, int op, MachineOperand* 
 
 void BinaryMInstruction::output() 
 {
-    switch (this->op) {
+    switch (this->op) 
+    {
         case BinaryMInstruction::ADD:
             fprintf(yyout, "\tadd ");
-            //this->PrintCond();?????
             this->def_list[0]->output();
             fprintf(yyout, ", ");
             this->use_list[0]->output();
@@ -205,9 +213,7 @@ void BinaryMInstruction::output()
     }
 }
 
-LoadMInstruction::LoadMInstruction(MachineBlock* p,
-    MachineOperand* dst, MachineOperand* src1, MachineOperand* src2,
-    int cond)
+LoadMInstruction::LoadMInstruction(MachineBlock* p, MachineOperand* dst, MachineOperand* src1, MachineOperand* src2, int cond)
 {
     this->parent = p;
     this->type = MachineInstruction::LOAD;
@@ -484,7 +490,6 @@ void MachineFunction::output() {
 
     (new BinaryMInstruction(nullptr, BinaryMInstruction::SUB, sp, sp, size))->output();
     
-    int count = 0;
     for (auto iter : block_list) {
         iter->output();
     }

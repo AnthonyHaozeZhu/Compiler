@@ -68,12 +68,10 @@ void FunctionDef::genCode()
     Unit* unit = builder->getUnit();
     Function* func = new Function(unit, se);
     BasicBlock* entry = func->getEntry();
-    // set the insert point to the entry basicblock of this function.
 
     builder->setInsertBB(entry);
     if (decl)
         decl->genCode();
-    // function中的stmt节点是用compoundstmt进行初始化的
     if (stmt)
         stmt->genCode();
 
@@ -81,9 +79,6 @@ void FunctionDef::genCode()
      * Construct control flow graph. You need do set successors and predecessors
      * for each basic block. Todo
      */
-
-    // BasicBlock* void_retbb=new BasicBlock(func);
-    // new RetInstruction(nullptr, void_retbb);
     for (auto block = func->begin(); block != func->end(); block++) 
     {
         //获取该块的最后一条指令
@@ -318,8 +313,7 @@ void Constant::genCode() {
 void Id::genCode() 
 {
     BasicBlock* bb = builder->getInsertBB();
-    Operand* addr =
-        dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
+    Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
     if (type->isInt())
     {        
         new LoadInstruction(dst, addr, bb);
@@ -396,9 +390,9 @@ void SeqNode::genCode()
 
 void DeclStmt::genCode() 
 {
-    IdentifierSymbolEntry* se =
-        dynamic_cast<IdentifierSymbolEntry*>(id->getSymbolEntry());
-    if (se->isGlobal()) {
+    IdentifierSymbolEntry* se = dynamic_cast<IdentifierSymbolEntry*>(id->getSymbolEntry());
+    if (se->isGlobal()) 
+    {
         Operand* addr;
         SymbolEntry* addr_se;
         addr_se = new IdentifierSymbolEntry(*se);
@@ -429,8 +423,6 @@ void DeclStmt::genCode()
         {
             if (expr->isInitValueListExpr()) 
             {
-                Operand* init = nullptr;
-                BasicBlock* bb = builder->getInsertBB();
                 ExprNode* temp = expr;
                 std::stack<ExprNode*> stk;
                 std::vector<int> idx;
@@ -557,9 +549,11 @@ void InitValueListExpr::genCode() {}
 
 void CallExpr::genCode() 
 {
+
     std::vector<Operand*> operands;
     ExprNode* temp = param;
-    while (temp) {
+    while (temp) 
+    {
         temp->genCode();
         operands.push_back(temp->getOperand());
         temp = ((ExprNode*)temp->getNext());
@@ -611,18 +605,13 @@ void AssignStmt::genCode()
     }
     else if (lval->getOriginType()->isArray()) 
     {
+        std::cout << "mm1" << std::endl;
         ((Id*)lval)->setLeft();
         lval->genCode();
         addr = lval->getOperand();
-
+        std:: cout << addr << std::endl;
     }
     Operand* src = expr->getOperand();
-    /***
-     * We haven't implemented array yet, the lval can only be ID. So we just
-     * store the result of the `expr` to the addr of the id. If you want to
-     * implement array, you have to caculate the address first and then store
-     * the result into it.
-     */
     new StoreInstruction(addr, src, bb);
 }
 
@@ -797,11 +786,14 @@ int Id::getValue()
 
 void InitValueListExpr::addExpr(ExprNode* expr) 
 {
-    if (this->expr == nullptr) {
+    if (this->expr == nullptr) 
+    {
         assert(childCnt == 0);
         childCnt++;
         this->expr = expr;
-    } else {
+    } 
+    else 
+    {
         childCnt++;
         this->expr->setNext(expr);
     }
@@ -816,7 +808,8 @@ bool InitValueListExpr::isFull()
 void InitValueListExpr::fill() 
 {
     Type* type = ((ArrayType*)(this->getType()))->getElementType();
-    if (type->isArray()) {
+    if (type->isArray()) 
+    {
         while (!isFull())
             this->addExpr(new InitValueListExpr(new ConstantSymbolEntry(type)));
         ExprNode* temp = expr;

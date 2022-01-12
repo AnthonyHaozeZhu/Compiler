@@ -30,8 +30,7 @@ public:
     MachineOperand* genMachineImm(int val);
     MachineOperand* genMachineLabel(int block_no);
     virtual void genMachineCode(AsmBuilder*) = 0;
-
-   protected:
+protected:
     unsigned instType;
     unsigned opcode;
     Instruction* prev;
@@ -93,15 +92,11 @@ public:
 class CmpInstruction : public Instruction 
 {
 public:
-    CmpInstruction(unsigned opcode,
-                   Operand* dst,
-                   Operand* src1,
-                   Operand* src2,
-                   BasicBlock* insert_bb = nullptr);
+    CmpInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr);
     ~CmpInstruction();
     void output() const;
     void genMachineCode(AsmBuilder*);
-    enum { E, NE, L, LE, G, GE };
+    enum {E, NE, L, LE, G, GE };
 };
 
 // unconditional branch
@@ -113,8 +108,7 @@ public:
     void setBranch(BasicBlock*);
     BasicBlock* getBranch();
     void genMachineCode(AsmBuilder*);
-
-   protected:
+protected:
     BasicBlock* branch;
 };
 

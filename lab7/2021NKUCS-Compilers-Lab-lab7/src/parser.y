@@ -361,22 +361,28 @@ VarDef
     | 
     ID Array {
         SymbolEntry* se;
-
+        std::vector<int> vec;
+        ExprNode* temp = $2;
+        while(temp){
+            vec.push_back(temp->getValue());
+            temp = (ExprNode*)(temp->getNext());
+        }
         Type *type = TypeSystem::intType;
-        Type *temp;
-        
-        //存入数组维度大小
-        temp = new ArrayType(type, $2 -> getValue());
-        //std::cout << $2 -> getValue() << ' ';
-        arrayType = (ArrayType*)temp;
-        se = new IdentifierSymbolEntry(temp, $1, identifiers->getLevel());
+        Type* temp1;
+        while(!vec.empty()){
+            temp1 = new ArrayType(type, vec.back());
+            if(type->isArray())
+                ((ArrayType*)type)->setArrayType(temp1);
+            type = temp1;
+            vec.pop_back();
+        }
+        arrayType = (ArrayType*)type;
+        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         ((IdentifierSymbolEntry*)se)->setAllZero();
-
-        //初始化数组的内存数据大小
-        int *p = new int[$2 -> getValue()];
+        int *p = new int[type->getSize()];
         ((IdentifierSymbolEntry*)se)->setArrayValue(p);
-
-        identifiers->install($1, se);
+        if(!identifiers->install($1, se))
+            fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
         $$ = new DeclStmt(new Id(se));
         delete []$1;
 
