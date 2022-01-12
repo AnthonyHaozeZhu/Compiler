@@ -13,8 +13,9 @@ class MachineUnit;
 class MachineOperand;
 class MachineFunction;
 
-class LinearScan {
-   private:
+class LinearScan 
+{
+private:
     struct Interval {
         int start;
         int end;
@@ -27,7 +28,6 @@ class LinearScan {
     };
     MachineUnit* unit;
     MachineFunction* func;
-    // 暂且先认为它是可用的寄存器吧
     std::vector<int> regs;
     std::map<MachineOperand*, std::set<MachineOperand*>> du_chains;
     std::vector<Interval*> intervals;
