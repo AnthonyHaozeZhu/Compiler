@@ -68,25 +68,19 @@ void FunctionDef::genCode()
     Unit* unit = builder->getUnit();
     Function* func = new Function(unit, se);
     BasicBlock* entry = func->getEntry();
-
     builder->setInsertBB(entry);
     if (decl)
         decl->genCode();
     if (stmt)
         stmt->genCode();
-
-    /**
-     * Construct control flow graph. You need do set successors and predecessors
-     * for each basic block. Todo
-     */
     for (auto block = func->begin(); block != func->end(); block++) 
     {
-        //获取该块的最后一条指令
         Instruction* i = (*block)->begin();
         Instruction* last = (*block)->rbegin();
         while (i != last) 
         {
-            if (i->isCond() || i->isUncond()) {
+            if (i->isCond() || i->isUncond()) 
+            {
                 (*block)->remove(i);
             }
             i = i->getNext();
@@ -284,8 +278,7 @@ void BinaryExpr::genCode()
         Operand* src1 = expr1->getOperand();
         Operand* src2 = expr2->getOperand();
         int opcode = -1;
-        switch (op) 
-        {
+        switch (op) {
             case ADD:
                 opcode = BinaryInstruction::ADD;
                 break;
@@ -306,27 +299,113 @@ void BinaryExpr::genCode()
     }
 }
 
-void Constant::genCode() {
-    // we don't need to generate code.
-}
+void Constant::genCode() {}
 
 void Id::genCode() 
 {
     BasicBlock* bb = builder->getInsertBB();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
     if (type->isInt())
-    {        
         new LoadInstruction(dst, addr, bb);
-    }
-    else if (type -> isArray())
+    else if (type->isArray()) 
     {
+        if (arrIdx) 
+        {
+    {        
+        {
+            Type* type = ((ArrayType*)(this->type))->getElementType();
+            Type* type1 = this->type;
+            Operand* tempSrc = addr;
+            Operand* tempDst = dst;
+            ExprNode* idx = arrIdx;
+            bool flag = false;
+            bool pointer = false;
+            bool firstFlag = true;
+            while (true) 
+            {
+    {        
+            {
+                if (((ArrayType*)type1)->getLength() == -1) 
+                {
+    {        
+                {
+    {        
+                {
+    {        
+                {
+                    Operand* dst1 = new Operand(new TemporarySymbolEntry(
+                        new PointerType(type), SymbolTable::getLabel()));
+                    tempSrc = dst1;
+                    new LoadInstruction(dst1, addr, bb);
+                    flag = true;
+                    firstFlag = false;
+                }
+                if (!idx) 
+                {
+                    Operand* dst1 = new Operand(new TemporarySymbolEntry(new PointerType(type), SymbolTable::getLabel()));
+                    Operand* idx = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+                    new GepInstruction(dst1, tempSrc, idx, bb);
+                    tempDst = dst1;
+                    pointer = true;
+                    break;
+                }
 
+                idx->genCode();
+                auto gep = new GepInstruction(tempDst, tempSrc, idx->getOperand(), bb, flag);
+                if (!flag && firstFlag) 
+                {
+                    gep->setFirst();
+                    firstFlag = false;
+                }
+                if (flag)
+                    flag = false;
+                if (type == TypeSystem::intType || type == TypeSystem::constIntType)
+                    break;
+                type = ((ArrayType*)type)->getElementType();
+                type1 = ((ArrayType*)type1)->getElementType();
+                tempSrc = tempDst;
+                tempDst = new Operand(new TemporarySymbolEntry(new PointerType(type), SymbolTable::getLabel()));
+                idx = (ExprNode*)(idx->getNext());
+            }
+            dst = tempDst;
+            if (!left && !pointer) 
+            {
+                Operand* dst1 = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
+                new LoadInstruction(dst1, dst, bb);
+                dst = dst1;
+            }
+
+        } 
+}
+        } 
+}
+        } 
+}
+        } 
+}
+        } 
+}
+        } 
+        else 
+        {
+            if (((ArrayType*)(this->type))->getLength() == -1) 
+            {
+                Operand* dst1 = new Operand(new TemporarySymbolEntry(new PointerType(((ArrayType*)(this->type))->getElementType()), SymbolTable::getLabel()));
+                new LoadInstruction(dst1, addr, bb);
+                dst = dst1;
+
+            } 
+            else 
+            {
+                Operand* idx = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+                auto gep = new GepInstruction(dst, addr, idx, bb);
+                gep->setFirst();
+            }
+        }
     }
-
 }
 
-void IfStmt::genCode() 
-{
+void IfStmt::genCode() {
     Function* func;
     BasicBlock *then_bb, *end_bb;
 
@@ -390,9 +469,9 @@ void SeqNode::genCode()
 
 void DeclStmt::genCode() 
 {
-    IdentifierSymbolEntry* se = dynamic_cast<IdentifierSymbolEntry*>(id->getSymbolEntry());
-    if (se->isGlobal()) 
-    {
+    IdentifierSymbolEntry* se =
+        dynamic_cast<IdentifierSymbolEntry*>(id->getSymbolEntry());
+    if (se->isGlobal()) {
         Operand* addr;
         SymbolEntry* addr_se;
         addr_se = new IdentifierSymbolEntry(*se);
@@ -401,28 +480,35 @@ void DeclStmt::genCode()
         se->setAddr(addr);
         unit.insertGlobal(se);
         mUnit.insertGlobal(se);
-    } 
-    else if (se->isLocal() || se->isParam()) 
-    {
+    } else if (se->isLocal() || se->isParam()) {
         Function* func = builder->getInsertBB()->getParent();
         BasicBlock* entry = func->getEntry();
         Instruction* alloca;
         Operand* addr;
         SymbolEntry* addr_se;
         Type* type;
+        // if (se->isParam() && se->getType()->isArray())
+        //     type = new PointerType(TypeSystem::intType);
+        // else
         type = new PointerType(se->getType());
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         addr = new Operand(addr_se);
         alloca = new AllocaInstruction(addr, se);
-        entry->insertFront(alloca);
+        // allocate space for local id in function stack.
+        entry->insertFront(alloca);  // allocate instructions should be inserted
+                                     // into the begin of the entry block.
         Operand* temp = nullptr;
         if (se->isParam())
             temp = se->getAddr();
-        se->setAddr(addr); 
+        se->setAddr(addr);  // set the addr operand in symbol entry so that
+                            // we can use it in subsequent code generation.
+                            // can use it in subsequent code generation.
         if (expr) 
         {
             if (expr->isInitValueListExpr()) 
             {
+                Operand* init = nullptr;
+                BasicBlock* bb = builder->getInsertBB();
                 ExprNode* temp = expr;
                 std::stack<ExprNode*> stk;
                 std::vector<int> idx;
@@ -435,6 +521,41 @@ void DeclStmt::genCode()
                         idx.push_back(0);
                         temp = ((InitValueListExpr*)temp)->getExpr();
                         continue;
+                    } 
+                    else 
+                    {
+                        temp->genCode();
+                        Type* type =
+                            ((ArrayType*)(se->getType()))->getElementType();
+                        Operand* tempSrc = addr;
+                        Operand* tempDst;
+                        Operand* index;
+                        bool flag = true;
+                        int i = 1;
+                        while (true) {
+                            tempDst = new Operand(new TemporarySymbolEntry(
+                                new PointerType(type),
+                                SymbolTable::getLabel()));
+                            index = (new Constant(new ConstantSymbolEntry(
+                                         TypeSystem::intType, idx[i++])))
+                                        ->getOperand();
+                            auto gep =
+                                new GepInstruction(tempDst, tempSrc, index, bb);
+                            gep->setInit(init);
+                            if (flag) {
+                                gep->setFirst();
+                                flag = false;
+                            }
+                            if (type == TypeSystem::intType ||
+                                type == TypeSystem::constIntType){
+                                gep->setLast();
+                                init = tempDst;
+                                break;
+                            }
+                            type = ((ArrayType*)type)->getElementType();
+                            tempSrc = tempDst;
+                        }
+                        new StoreInstruction(tempDst, temp->getOperand(), bb);
                     }
                     while (true) 
                     {
@@ -605,11 +726,9 @@ void AssignStmt::genCode()
     }
     else if (lval->getOriginType()->isArray()) 
     {
-        std::cout << "mm1" << std::endl;
         ((Id*)lval)->setLeft();
         lval->genCode();
         addr = lval->getOperand();
-        std:: cout << addr << std::endl;
     }
     Operand* src = expr->getOperand();
     new StoreInstruction(addr, src, bb);
@@ -653,6 +772,8 @@ CallExpr::CallExpr(SymbolEntry* se, ExprNode* param) : ExprNode(se), param(param
         unit.insertDeclare(se);
     }
 }
+
+AssignStmt::AssignStmt(ExprNode* lval, ExprNode* expr) : lval(lval), expr(expr) {}
 
 Type* Id::getType() 
 {
@@ -730,8 +851,8 @@ int BinaryExpr::getValue()
     return value;
 }
 
-UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr) : ExprNode(se, UNARYEXPR), op(op), expr(expr) 
-{
+UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr)
+    : ExprNode(se, UNARYEXPR), op(op), expr(expr) {
     std::string op_str = op == UnaryExpr::NOT ? "!" : "-";
     if (op == UnaryExpr::NOT) 
     {
@@ -746,9 +867,8 @@ UnaryExpr::UnaryExpr(SymbolEntry* se, int op, ExprNode* expr) : ExprNode(se, UNA
                     ue->setType(TypeSystem::boolType);
             }
         }
-    } 
-    else if (op == UnaryExpr::SUB) 
-    {
+        
+    } else if (op == UnaryExpr::SUB) {
         type = TypeSystem::intType;
         dst = new Operand(se);
         if (expr->isUnaryExpr()) {
