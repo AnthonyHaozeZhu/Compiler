@@ -68,8 +68,8 @@ protected:
     int op;                               // Instruction opcode
     // Instruction operand list, sorted by appearance order in assembly
     // instruction
-    std::vector<MachineOperand*> def_list;   //基本是用来存目的地址的列表
-    std::vector<MachineOperand*> use_list;   //存放源操作数的列表
+    std::vector<MachineOperand*> def_list;   
+    std::vector<MachineOperand*> use_list;   
     void addDef(MachineOperand* ope) { def_list.push_back(ope); };
     void addUse(MachineOperand* ope) { use_list.push_back(ope); };
     // Print execution code after printing opcode
@@ -83,7 +83,6 @@ public:
     int getNo() { return no; };
     std::vector<MachineOperand*>& getDef() { return def_list; };
     std::vector<MachineOperand*>& getUse() { return use_list; };
-    //在当前代码块的当前指令的前边/后边插入参数中的指令
     void insertBefore(MachineInstruction*);
     void insertAfter(MachineInstruction*);
     MachineBlock* getParent() const { return parent; };
@@ -92,7 +91,6 @@ public:
     bool isAdd() const { return type == BINARY && op == 0; };
 };
 
-//以下是各个基本指令的语句块
 
 class BinaryMInstruction : public MachineInstruction 
 {
@@ -151,13 +149,12 @@ public:
 class MachineBlock 
 {
 private:
-    static int label;
     MachineFunction* parent;
     int no;
-    std::vector<MachineBlock*> pred, succ;        //记录该语句块的上一个块、条件判断中正确走向的块
-    std::vector<MachineInstruction*> inst_list;   //块内指令列表
-    std::set<MachineOperand*> live_in;          //活跃期内的指令
-    std::set<MachineOperand*> live_out;         //活跃期外的指令列表
+    std::vector<MachineBlock*> pred, succ;        
+    std::vector<MachineInstruction*> inst_list;  //指令列表
+    std::set<MachineOperand*> live_in;    //活跃
+    std::set<MachineOperand*> live_out;  //不活跃
     int cmpno;                   
 
 
@@ -194,9 +191,9 @@ class MachineFunction
 {
 private:
     MachineUnit* parent;
-    std::vector<MachineBlock*> block_list;  //每个函数都包括数个语句块
-    int stack_size;                       //记录该函数的栈大小
-    std::set<int> saved_regs;          //用于存该函数的寄存器信息
+    std::vector<MachineBlock*> block_list; 
+    int stack_size;                       //栈大小
+    std::set<int> saved_regs;          //寄存器信息
     SymbolEntry* sym_ptr;
     int paramsNum;
 
@@ -211,16 +208,18 @@ public:
      * we store offset in symbol entry of this variable in function
      * AllocInstruction::genMachineCode() you can use this function in
      * LinearScan::genSpillCode() */
-    int AllocSpace(int size) {             //增加栈的大小
+    int AllocSpace(int size) 
+    {
         this->stack_size += size;
         return this->stack_size;
     };
-    void InsertBlock(MachineBlock* block) {
+    void InsertBlock(MachineBlock* block) 
+    {
         this->block_list.push_back(block);
     };
     void addSavedRegs(int regno) { saved_regs.insert(regno); };
     void output();
-    std::vector<MachineOperand*> getSavedRegs();      //用于返回当前函数的寄存器堆
+    std::vector<MachineOperand*> getSavedRegs();
     int getParamsNum() const { return paramsNum; };
     MachineUnit* getParent() const { return parent; };
 };

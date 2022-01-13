@@ -12,7 +12,6 @@ Type* TypeSystem::constIntType = &commonConstInt;
 Type* TypeSystem::intType = &commonInt;
 Type* TypeSystem::voidType = &commonVoid;
 Type* TypeSystem::boolType = &commonBool;
-Type* TypeSystem::arrayType = &commonInt;
 
 std::string IntType::toStr() {
     std::ostringstream buffer;

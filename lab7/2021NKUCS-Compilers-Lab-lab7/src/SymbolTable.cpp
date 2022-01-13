@@ -63,8 +63,15 @@ std::string ConstantSymbolEntry::toStr() {
     return buffer.str();
 }
 
-IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int scope, int paramNo, bool sysy)
-    : SymbolEntry(type, SymbolEntry::VARIABLE),name(name), sysy(sysy), paramNo(paramNo) {
+IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type,
+                                             std::string name,
+                                             int scope,
+                                             int paramNo,
+                                             bool sysy)
+    : SymbolEntry(type, SymbolEntry::VARIABLE),
+      name(name),
+      sysy(sysy),
+      paramNo(paramNo) {
     this->scope = scope;
     this->initial = false;
     this->label = -1;
@@ -78,7 +85,7 @@ void IdentifierSymbolEntry::setValue(int value) {
             this->value = value;
             initial = true;
         } else {
-
+            // 需要报错
         }
     } else {
         this->value = value;
@@ -91,7 +98,7 @@ void IdentifierSymbolEntry::setArrayValue(int* arrayValue) {
             this->arrayValue = arrayValue;
             initial = true;
         } else {
-
+            // 需要报错
         }
     } else {
         this->arrayValue = arrayValue;
@@ -158,7 +165,7 @@ SymbolEntry* SymbolTable::lookup(std::string name) {
 
 // install the entry into current symbol table.
 bool SymbolTable::install(std::string name, SymbolEntry* entry) {
-
+    // 同时检查是否重定义
     if (this->symbolTable.find(name) != this->symbolTable.end()) {
         SymbolEntry* se = this->symbolTable[name];
         if (se->getType()->isFunc())

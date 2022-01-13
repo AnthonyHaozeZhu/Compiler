@@ -31,7 +31,6 @@ public:
     Node();
     int getSeq() const { return seq; };
     static void setIRBuilder(IRBuilder* ib) { builder = ib; };
-    //virtual //void output(int level) = 0;
     void setNext(Node* node);
     Node* getNext() { return next; }
     virtual void genCode() = 0;
@@ -51,7 +50,6 @@ protected:
 public:
     ExprNode(SymbolEntry* symbolEntry, int kind = EXPR) : kind(kind), symbolEntry(symbolEntry){};
     Operand* getOperand() { return dst; };
-    // //void output(int level);
     virtual int getValue() { return -1; };
     bool isExpr() const { return kind == EXPR; };
     bool isInitValueListExpr() const { return kind == INITVALUELISTEXPR; };
@@ -95,8 +93,6 @@ private:
     ExprNode* param;
 public:
     CallExpr(SymbolEntry* se, ExprNode* param = nullptr);
-    //void output(int level);
-    //bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
@@ -108,9 +104,7 @@ public:
         dst = new Operand(se);
         type = TypeSystem::intType;
     };
-    //void output(int level);
     int getValue();
-    //bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
@@ -130,6 +124,11 @@ public:
                 SymbolEntry* temp = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
                 dst = new Operand(temp);
             } 
+            else if (type->isArray()) 
+            {
+                SymbolEntry* temp = new TemporarySymbolEntry(new PointerType(((ArrayType*)type)->getElementType()), SymbolTable::getLabel());
+                dst = new Operand(temp);
+            }
         }
     };
     void genCode();
@@ -144,7 +143,6 @@ class ImplicitValueInitExpr : public ExprNode
 {
 public:
     ImplicitValueInitExpr(SymbolEntry* se) : ExprNode(se){};
-    //void output(int level);
 };
 
 class InitValueListExpr : public ExprNode 
@@ -197,8 +195,6 @@ private:
     StmtNode* stmt;
 public:
     CompoundStmt(StmtNode* stmt = nullptr) : stmt(stmt){};
-    //void output(int level);
-    //bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
@@ -313,8 +309,7 @@ public:
     void genCode();
 };
 
-class ReturnStmt : public StmtNode 
-{
+class ReturnStmt : public StmtNode {
 private:
     ExprNode* retValue;
 public:
@@ -322,21 +317,23 @@ public:
     void genCode();
 };
 
-class AssignStmt : public StmtNode
-{
-private:
+class AssignStmt : public StmtNode {
+   private:
     ExprNode* lval;
     ExprNode* expr;
-public:
-    AssignStmt(ExprNode* lval, ExprNode* expr) : lval(lval), expr(expr) {};
+
+   public:
+    AssignStmt(ExprNode* lval, ExprNode* expr);
+    void output(int level);
+    bool typeCheck(Type* retType = nullptr);
     void genCode();
 };
 
-class ExprStmt : public StmtNode 
-{
-private:
+class ExprStmt : public StmtNode {
+   private:
     ExprNode* expr;
-public:
+
+   public:
     ExprStmt(ExprNode* expr) : expr(expr){};
     void genCode();
 };
@@ -347,6 +344,7 @@ private:
     SymbolEntry* se;
     DeclStmt* decl;
     StmtNode* stmt;
+
 public:
     FunctionDef(SymbolEntry* se, DeclStmt* decl, StmtNode* stmt) : se(se), decl(decl), stmt(stmt){};
     void genCode();

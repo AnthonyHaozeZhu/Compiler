@@ -3,8 +3,6 @@
 #include "Type.h"
 extern FILE* yyout;
 
-int MachineBlock::label = 0;
-
 MachineOperand::MachineOperand(int tp, int val) 
 {
     this->type = tp;
@@ -67,8 +65,7 @@ void MachineOperand::PrintReg()
     }
 }
 
-void MachineOperand::output() 
-{
+void MachineOperand::output() {
     /* HINT：print operand
      * Example:
      * immediate num 1 -> print #1;
@@ -76,10 +73,10 @@ void MachineOperand::output()
      * lable addr_a -> print addr_a; */
     switch (this->type) {
         case IMM:
-            fprintf(yyout, "#%d", this->val);    //立即数打印val
+            fprintf(yyout, "#%d", this->val);
             break;
         case VREG:
-            fprintf(yyout, "v%d", this->reg_no);  //变量打印寄存器值
+            fprintf(yyout, "v%d", this->reg_no);
             break;
         case REG:
             PrintReg();
@@ -87,20 +84,19 @@ void MachineOperand::output()
         case LABEL:
             if (this->label.substr(0, 2) == ".L")
                 fprintf(yyout, "%s", this->label.c_str());
-            else if (this->label.substr(0, 1) == "@")  
+            else if (this->label.substr(0, 1) == "@")
                 fprintf(yyout, "%s", this->label.c_str() + 1);
             else
                 fprintf(yyout, "addr_%s%d", this->label.c_str(), parent->getParent()->getParent()->getParent()->getGnumber());
-        default:                  //指令->block->func->unit->N(指全局变量)
+        default:                  
             break;
     }
 }
 
-void MachineInstruction::PrintCond() 
-{
+void MachineInstruction::PrintCond() {
     switch (cond) {
         case EQ:
-            fprintf(yyout, "eq");          //仿照给的样例LT把其他条件写出
+            fprintf(yyout, "eq");
             break;
         case NE:
             fprintf(yyout, "ne");
@@ -235,13 +231,12 @@ void LoadMInstruction::output()
     this->def_list[0]->output();
     fprintf(yyout, ", ");
 
-
     if (this->use_list[0]->isImm()) {
         fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
         return;
     }
 
-
+    // Load address
     if (this->use_list[0]->isReg() || this->use_list[0]->isVReg())
         fprintf(yyout, "[");
 
@@ -256,9 +251,7 @@ void LoadMInstruction::output()
     fprintf(yyout, "\n");
 }
 
-StoreMInstruction::StoreMInstruction(MachineBlock* p,
-    MachineOperand* src1, MachineOperand* src2, MachineOperand* src3, 
-    int cond)
+StoreMInstruction::StoreMInstruction(MachineBlock* p, MachineOperand* src1, MachineOperand* src2, MachineOperand* src3, int cond)
 {
     this->parent = p;
     this->type = MachineInstruction::STORE;
@@ -278,11 +271,11 @@ void StoreMInstruction::output() {
     fprintf(yyout, "\tstr ");
     this->use_list[0]->output();
     fprintf(yyout, ", ");
-    // store address
     if (this->use_list[1]->isReg() || this->use_list[1]->isVReg())
         fprintf(yyout, "[");
     this->use_list[1]->output();
-    if (this->use_list.size() > 2) {
+    if (this->use_list.size() > 2) 
+    {
         fprintf(yyout, ", ");
         this->use_list[2]->output();
     }
@@ -291,9 +284,7 @@ void StoreMInstruction::output() {
     fprintf(yyout, "\n");
 }
 
-MovMInstruction::MovMInstruction(MachineBlock* p, int op, 
-    MachineOperand* dst, MachineOperand* src,
-    int cond)
+MovMInstruction::MovMInstruction(MachineBlock* p, int op, MachineOperand* dst, MachineOperand* src, int cond)
 {
     this->parent = p;
     this->type = MachineInstruction::MOV;
@@ -316,9 +307,7 @@ void MovMInstruction::output()
     fprintf(yyout, "\n");
 }
 
-BranchMInstruction::BranchMInstruction(MachineBlock* p, int op, 
-    MachineOperand* dst, 
-    int cond)
+BranchMInstruction::BranchMInstruction(MachineBlock* p, int op, MachineOperand* dst, int cond)
 {
     this->parent = p;
     this->type = MachineInstruction::BRANCH;
@@ -328,8 +317,10 @@ BranchMInstruction::BranchMInstruction(MachineBlock* p, int op,
     dst->setParent(this);
 }
 
-void BranchMInstruction::output() {
-    switch (op) {
+void BranchMInstruction::output() 
+{
+    switch (op) 
+    {
         case B:
             fprintf(yyout, "\tb");
             PrintCond();
@@ -354,9 +345,7 @@ void BranchMInstruction::output() {
     }
 }
 
-CmpMInstruction::CmpMInstruction(MachineBlock* p, 
-    MachineOperand* src1, MachineOperand* src2, 
-    int cond)
+CmpMInstruction::CmpMInstruction(MachineBlock* p, MachineOperand* src1, MachineOperand* src2, int cond) 
 {
     this->parent = p;
     this->type = MachineInstruction::CMP;
@@ -369,7 +358,8 @@ CmpMInstruction::CmpMInstruction(MachineBlock* p,
     src2->setParent(this);
 }
 
-void CmpMInstruction::output() {
+void CmpMInstruction::output() 
+{
     fprintf(yyout, "\tcmp ");
     this->use_list[0]->output();
     fprintf(yyout, ", ");
@@ -377,9 +367,8 @@ void CmpMInstruction::output() {
     fprintf(yyout, "\n");
 }
 
-StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op,
-    std::vector<MachineOperand*> srcs, MachineOperand* src,
-    MachineOperand* src1, int cond) {
+StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op, std::vector<MachineOperand*> srcs, MachineOperand* src, MachineOperand* src1, int cond) 
+{
     this->parent = p;
     this->type = MachineInstruction::STACK;
     this->op = op;
@@ -389,14 +378,17 @@ StackMInstrcuton::StackMInstrcuton(MachineBlock* p, int op,
             this->use_list.push_back(*it);
     this->use_list.push_back(src);
     src->setParent(this);
-    if (src1) {
+    if (src1) 
+    {
         this->use_list.push_back(src1);
         src1->setParent(this);
     }
 }
 
-void StackMInstrcuton::output() {
-    switch (op) {
+void StackMInstrcuton::output() 
+{
+    switch (op) 
+    {
         case PUSH:
             fprintf(yyout, "\tpush ");
             break;
@@ -406,57 +398,65 @@ void StackMInstrcuton::output() {
     }
     fprintf(yyout, "{");
     this->use_list[0]->output();
-    for (long unsigned int i = 1; i < use_list.size(); i++) {
+    for (long unsigned int i = 1; i < use_list.size(); i++) 
+    {
         fprintf(yyout, ", ");
         this->use_list[i]->output();
     }
     fprintf(yyout, "}\n");
 }
 
-MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
+MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) 
+{
     this->parent = p;
     this->sym_ptr = sym_ptr;
     this->stack_size = 0;
-    this->paramsNum =
-        ((FunctionType*)(sym_ptr->getType()))->getParamsSe().size();
+    this->paramsNum = ((FunctionType*)(sym_ptr->getType()))->getParamsSe().size();
 };
 
-void MachineBlock::output() {
+void MachineBlock::output() 
+{
     int offset = (parent->getSavedRegs().size() + 2) * 4;
     int num = parent->getParamsNum();
     int count = 0;
-    if (!inst_list.empty()) {
+    if (!inst_list.empty()) 
+    {
         fprintf(yyout, ".L%d:\n", this->no);
-        for (auto it = inst_list.begin(); it != inst_list.end(); it++) {
-            if (num > 4 && (*it)->isStore()) {
+        for (auto it = inst_list.begin(); it != inst_list.end(); it++) 
+        {
+            if (num > 4 && (*it)->isStore()) 
+            {
                 MachineOperand* operand = (*it)->getUse()[0];
                 if (operand->isReg() && operand->getReg() == 0) {
-                    if (!count) {
+                    if (!count) 
+                    {
                         count++;
-                    } else {
+                    } 
+                    else 
+                    {
                         auto fp = new MachineOperand(MachineOperand::REG, 11);
                         auto r3 = new MachineOperand(MachineOperand::REG, 0);
-                        auto off =
-                            new MachineOperand(MachineOperand::IMM, offset);
+                        auto off = new MachineOperand(MachineOperand::IMM, offset);
                         offset += 4;
                         auto cur_inst = new LoadMInstruction(this, r3, fp, off);
                         cur_inst->output();
                     }
                 }
             }
-            if ((*it)->isBX()) {
+            if ((*it)->isBX()) 
+            {
                 auto fp = new MachineOperand(MachineOperand::REG, 11);
                 auto lr = new MachineOperand(MachineOperand::REG, 14);
-                auto cur_inst =
-                    new StackMInstrcuton(this, StackMInstrcuton::POP,
-                                         parent->getSavedRegs(), fp, lr);
+                auto cur_inst = new StackMInstrcuton(this, StackMInstrcuton::POP, parent->getSavedRegs(), fp, lr);
                 cur_inst->output();
             }
-            if ((*it)->isAdd()) {
+            if ((*it)->isAdd()) 
+            {
                 auto dst = (*it)->getDef()[0];
                 auto src1 = (*it)->getUse()[0];
                 if (dst->isReg() && dst->getReg() == 13 && src1->isReg() &&
-                    src1->getReg() == 13 && (*(it + 1))->isBX()) {
+                    src1->getReg() == 13 && (*(it + 1))->isBX()) 
+                    {
                     int size = parent->AllocSpace(0);
                     (*it)->getUse()[1]->setVal(size);
                 }
@@ -466,10 +466,10 @@ void MachineBlock::output() {
     }
 }
 
-void MachineFunction::output() {
-    fprintf(yyout, ".global %s\n", this->sym_ptr->toStr().c_str() + 1);
-    fprintf(yyout, ".type %s , %%function\n",
-            this->sym_ptr->toStr().c_str() + 1);
+void MachineFunction::output() 
+{
+    fprintf(yyout, "\t.global %s\n", this->sym_ptr->toStr().c_str() + 1);
+    fprintf(yyout, "\t.type %s , %%function\n", this->sym_ptr->toStr().c_str() + 1);
     fprintf(yyout, "%s:\n", this->sym_ptr->toStr().c_str() + 1);
     // TODO
     /* Hint:
@@ -482,38 +482,50 @@ void MachineFunction::output() {
     auto fp = new MachineOperand(MachineOperand::REG, 11);
     auto sp = new MachineOperand(MachineOperand::REG, 13);
     auto lr = new MachineOperand(MachineOperand::REG, 14);
-    (new StackMInstrcuton(nullptr, StackMInstrcuton::PUSH, getSavedRegs(), fp,
-        lr)) ->output();
+    (new StackMInstrcuton(nullptr, StackMInstrcuton::PUSH, getSavedRegs(), fp, lr)) ->output();
     (new MovMInstruction(nullptr, MovMInstruction::MOV, fp, sp))->output();
     int off = AllocSpace(0);
     auto size = new MachineOperand(MachineOperand::IMM, off);
 
     (new BinaryMInstruction(nullptr, BinaryMInstruction::SUB, sp, sp, size))->output();
     
-    for (auto iter : block_list) {
+    for (auto iter : block_list) 
+    {
         iter->output();
     }
     fprintf(yyout, "\n");
 }
 
-std::vector<MachineOperand*> MachineFunction::getSavedRegs() {
+std::vector<MachineOperand*> MachineFunction::getSavedRegs() 
+{
     std::vector<MachineOperand*> regs;
-    for (auto it = saved_regs.begin(); it != saved_regs.end(); it++) {
+    for (auto it = saved_regs.begin(); it != saved_regs.end(); it++) 
+    {
         auto reg = new MachineOperand(MachineOperand::REG, *it);
         regs.push_back(reg);
     }
     return regs;
 }
 
-void MachineUnit::PrintGlobalDecl() {
+void MachineUnit::PrintGlobalDecl() 
+{
     std::vector<int> constIdx;
+    std::vector<int> zeroIdx;
     if (!global_list.empty())           //打印全局变量列表
         fprintf(yyout, ".data\n\n");
-    for (long unsigned int i = 0; i < global_list.size(); i++) {
+    for (long unsigned int i = 0; i < global_list.size(); i++) 
+    {
         IdentifierSymbolEntry* se = (IdentifierSymbolEntry*)global_list[i];
-        if (se->getConst()) {
+        if (se->getConst()) 
+        {
             constIdx.push_back(i);
-        }  else {
+        }  
+        else if (se->isAllZero()) 
+        {
+            zeroIdx.push_back(i);
+        } 
+        else
+        {
             fprintf(yyout, ".global %s\n", se->toStr().c_str());
             fprintf(yyout, ".size %s, %d\n", se->toStr().c_str(),
                     se->getType()->getSize() / 8);
@@ -532,10 +544,20 @@ void MachineUnit::PrintGlobalDecl() {
             fprintf(yyout, "\t.word %d\n", se->getValue());
         }
     }
-
+    if (!zeroIdx.empty()) 
+    {
+        for (auto i : zeroIdx) {
+            IdentifierSymbolEntry* se = (IdentifierSymbolEntry*)global_list[i];
+            if (se->getType()->isArray()) {
+                fprintf(yyout, "\t.comm %s, %d, 4\n", se->toStr().c_str(),
+                        se->getType()->getSize() / 8);
+            }
+        }
+    }
 }
 
-void MachineUnit::output() {
+void MachineUnit::output() 
+{
     // TODO
     /* Hint:
      * 1. You need to print global variable/const declarition code;
@@ -544,18 +566,20 @@ void MachineUnit::output() {
     fprintf(yyout, "\t.arch armv8-a\n");
     fprintf(yyout, "\t.arch_extension crc\n");
     fprintf(yyout, "\t.arm\n");
-    PrintGlobalDecl();                //调用函数打印全局变量定义（常量定义也在该函数中打印）
-    fprintf(yyout, ".text\n\n");
+    PrintGlobalDecl();
+    fprintf(yyout, "\t.text\n");
     for (auto iter : func_list)
         iter->output();
     printGlobal();
 }
 
-void MachineUnit::insertGlobal(SymbolEntry* se) {
+void MachineUnit::insertGlobal(SymbolEntry* se) 
+{
     global_list.push_back(se);
 }
 
-void MachineUnit::printGlobal(){
+void MachineUnit::printGlobal()
+{
     for (auto s : global_list) {
         IdentifierSymbolEntry* se = (IdentifierSymbolEntry*)s;
         fprintf(yyout, "addr_%s%d:\n", se->toStr().c_str(), gnumber);

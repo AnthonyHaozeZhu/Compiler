@@ -30,22 +30,22 @@
     char* strtype;
     StmtNode* stmttype;
     ExprNode* exprtype;
-    Node* nodetype;
     Type* type;
     SymbolEntry* se;
 }
 
 %start Program
-%token <strtype> ID 
+%token <strtype> ID STRING
 %token <itype> INTEGER
-%token IF ELSE WHILE BREAK CONTINUE
+%token IF ELSE WHILE
 %token INT VOID
-%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET COMMA
-%token ADD ASSIGN EQUAL NOT SUB MUL DIV MOD OR AND NOTEQUAL LESS GREATER LESSEQUAL GREATEREQUAL
-%token RETURN CONST
+%token LPAREN RPAREN LBRACE RBRACE SEMICOLON LBRACKET RBRACKET COMMA  
+%token ADD SUB MUL DIV MOD OR AND LESS LESSEQUAL GREATER GREATEREQUAL ASSIGN EQUAL NOTEQUAL NOT
+%token CONST
+%token RETURN CONTINUE BREAK
 
 %type<stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt BreakStmt ContinueStmt ReturnStmt DeclStmt FuncDef ConstDeclStmt VarDeclStmt ConstDefList VarDef ConstDef VarDefList FuncFParam FuncFParams FuncFParamsPlus BlankStmt
-%type<exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp ConstExp EqExp UnaryExp InitVal ConstInitVal FuncRParams Array //InitValList ConstInitValList 
+%type<exprtype> Exp AddExp Cond LOrExp PrimaryExp LVal RelExp LAndExp MulExp ConstExp EqExp UnaryExp InitVal ConstInitVal  FuncRParams Array FuncArray
 %type<type> Type
 
 %precedence THEN
@@ -93,7 +93,7 @@ LVal
     {
         SymbolEntry* se;
         se = identifiers->lookup($1);
-        $$ = new Id(se);
+        $$ = new Id(se, $2);
         delete []$1;
     }    
     ; 
@@ -301,23 +301,12 @@ Type
         $$ = TypeSystem::voidType;
     }
     ;
-Array 
-    : LBRACKET ConstExp RBRACKET {
-        $$ = $2;
-    }
-    // | Array LBRACKET ConstExp RBRACKET {
-    //     $$ = $1;
-    //     $1->setNext($3);
-    // }
-    ;
 DeclStmt
     : VarDeclStmt {$$ = $1;}
     | ConstDeclStmt {$$ = $1;}
     ;
 VarDeclStmt
-    : Type VarDefList SEMICOLON {
-        $$ = $2;
-    }
+    : Type VarDefList SEMICOLON {$$ = $2;}
     ;
 ConstDeclStmt
     : CONST Type ConstDefList SEMICOLON {
@@ -329,9 +318,7 @@ VarDefList
         $$ = $1;
         $1->setNext($3);
     } 
-    | VarDef {
-        $$ = $1;
-    }
+    | VarDef {$$ = $1;}
     ;
 ConstDefList
     : ConstDefList COMMA ConstDef {
@@ -341,25 +328,15 @@ ConstDefList
     | ConstDef {$$ = $1;}
     ;
 VarDef
-    : 
-    ID {
+    : ID {
         SymbolEntry* se;
         se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
-        identifiers->install($1, se);
+        if(!identifiers->install($1, se))
+            fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
         $$ = new DeclStmt(new Id(se));
         delete []$1;
     }
-    | 
-    ID ASSIGN InitVal {
-        SymbolEntry* se;
-        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
-        identifiers->install($1, se);
-        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
-        $$ = new DeclStmt(new Id(se), $3);
-        delete []$1;
-    }
-    | 
-    ID Array {
+    | ID Array {
         SymbolEntry* se;
         std::vector<int> vec;
         ExprNode* temp = $2;
@@ -385,13 +362,18 @@ VarDef
             fprintf(stderr, "identifier \"%s\" is already defined\n", (char*)$1);
         $$ = new DeclStmt(new Id(se));
         delete []$1;
-
-        
+    }
+    | ID ASSIGN InitVal {
+        SymbolEntry* se;
+        se = new IdentifierSymbolEntry(TypeSystem::intType, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+        ((IdentifierSymbolEntry*)se)->setValue($3->getValue());
+        $$ = new DeclStmt(new Id(se), $3);
+        delete []$1;
     }
     ;
 ConstDef
-    : ID ASSIGN ConstInitVal 
-    {
+    : ID ASSIGN ConstInitVal {
         SymbolEntry* se;
         se = new IdentifierSymbolEntry(TypeSystem::constIntType, $1, identifiers->getLevel());
         ((IdentifierSymbolEntry*)se)->setConst();
@@ -401,14 +383,55 @@ ConstDef
         delete []$1;
     }
     ;
+Array
+    : LBRACKET ConstExp RBRACKET 
+    {
+        $$ = $2;
+    }
+    | Array LBRACKET ConstExp RBRACKET 
+    {
+        $$ = $1;
+        $1->setNext($3);
+    }
+    ;
 InitVal 
     : Exp 
     {
         $$ = $1;
+        if(!stk.empty())
+        {
+            arrayValue[idx++] = $1->getValue();
+            Type* arrTy = stk.top()->getSymbolEntry()->getType();
+            if(arrTy == TypeSystem::intType)
+                stk.top()->addExpr($1);
+            else
+                while(arrTy)
+                {
+                    if(((ArrayType*)arrTy)->getElementType() != TypeSystem::intType)
+                    {
+                        arrTy = ((ArrayType*)arrTy)->getElementType();
+                        SymbolEntry* se = new ConstantSymbolEntry(arrTy);
+                        InitValueListExpr* list = new InitValueListExpr(se);
+                        stk.top()->addExpr(list);
+                        stk.push(list);
+                    }
+                    else
+                    {
+                        stk.top()->addExpr($1);
+                        while(stk.top()->isFull() && stk.size() != (long unsigned int)leftCnt)
+                        {
+                            arrTy = ((ArrayType*)arrTy)->getArrayType();
+                            stk.pop();
+                        }
+                        break;
+                    }
+                }
+        }         
     }
     ;
 ConstInitVal
-    : ConstExp {
+    : ConstExp 
+    {
         $$ = $1;
     }
     ;
@@ -418,21 +441,21 @@ FuncDef
         identifiers = new SymbolTable(identifiers);
         paramNo = 0;
     }
-    LPAREN FuncFParamsPlus RPAREN {
+    LPAREN FuncFParamsPlus RPAREN 
+    {
         Type* funcType;
         std::vector<Type*> vec;
         std::vector<SymbolEntry*> vec1;
         DeclStmt* temp = (DeclStmt*)$5;
-        while(temp){
+        while(temp)
+        {
             vec.push_back(temp->getId()->getSymbolEntry()->getType());
             vec1.push_back(temp->getId()->getSymbolEntry());
             temp = (DeclStmt*)(temp->getNext());
         }
         funcType = new FunctionType($1, vec, vec1);
         SymbolEntry* se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
-        if(!identifiers->getPrev()->install($2, se)){
-            fprintf(stderr, "redefinition of \'%s %s\'\n", $2, se->getType()->toStr().c_str());
-        }
+        if(!identifiers->getPrev()->install($2, se)){}
         $<se>$ = se; 
     } 
     BlockStmt {
@@ -464,6 +487,44 @@ FuncFParam
         ((IdentifierSymbolEntry*)se)->setAddr(new Operand(se));
         $$ = new DeclStmt(new Id(se));
         delete []$2;
+    }
+    | Type ID FuncArray 
+    {
+        SymbolEntry* se;
+        ExprNode* temp = $3;
+        Type* arr = TypeSystem::intType;
+        Type* arr1;
+        std::stack<ExprNode*> stk;
+        while(temp)
+        {
+            stk.push(temp);
+            temp = (ExprNode*)(temp->getNext());
+        }
+        while(!stk.empty())
+        {
+            arr1 = new ArrayType(arr, stk.top()->getValue());
+            if(arr->isArray())
+                ((ArrayType*)arr)->setArrayType(arr1);
+            arr = arr1;
+            stk.pop();
+        }
+        se = new IdentifierSymbolEntry(arr, $2, identifiers->getLevel(), paramNo++);
+        identifiers->install($2, se);
+        ((IdentifierSymbolEntry*)se)->setLabel();
+        ((IdentifierSymbolEntry*)se)->setAddr(new Operand(se));
+        $$ = new DeclStmt(new Id(se));
+        delete []$2;
+    }
+    ;
+FuncArray 
+    : LBRACKET RBRACKET 
+    {
+        $$ = new ExprNode(nullptr);
+    }
+    | FuncArray LBRACKET Exp RBRACKET 
+    {
+        $$ = $1;
+        $$->setNext($3);
     }
     ;
 %%

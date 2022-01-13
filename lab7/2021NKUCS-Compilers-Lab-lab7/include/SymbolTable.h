@@ -8,7 +8,8 @@
 class Type;
 class Operand;
 
-class SymbolEntry {
+class SymbolEntry 
+{
 private:
     int kind;
     SymbolEntry* next;
@@ -30,7 +31,8 @@ public:
 };
 
 // symbol table managing identifier symbol entries
-class SymbolTable {
+class SymbolTable 
+{
 private:
     std::map<std::string, SymbolEntry*> symbolTable;
     SymbolTable* prev;
@@ -54,7 +56,8 @@ public:
 
     Compiler should create constant symbol entry for literal constant '1'.
 */
-class ConstantSymbolEntry : public SymbolEntry {
+class ConstantSymbolEntry : public SymbolEntry 
+{
 private:
     int value;
     std::string strValue;
