@@ -166,55 +166,52 @@ void LinearScan::genSpillCode()
         interval->disp = -func->AllocSpace(4);
         auto off = new MachineOperand(MachineOperand::IMM, interval->disp);
         auto fp = new MachineOperand(MachineOperand::REG, 11);
-        for (auto use : interval->uses) {
-            auto temp = new MachineOperand(*use);
+        for (auto use : interval->uses) 
+        {
+            MachineOperand* temp = new MachineOperand(*use);
             MachineOperand* operand = nullptr;
-            if (interval->disp > 255 || interval->disp < -255) {
-                operand = new MachineOperand(MachineOperand::VREG,
-                                             SymbolTable::getLabel());
-                auto inst1 = new LoadMInstruction(use->getParent()->getParent(),
-                                                  operand, off);
-                use->getParent()->insertBefore(inst1);
-            }
-            if (operand) {
-                auto inst =new LoadMInstruction(use->getParent()->getParent(), temp,
-                                         fp, new MachineOperand(*operand));
+            if (operand) 
+            {
+                MachineOperand *t = new MachineOperand(*operand);
+                auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, t);
                 use->getParent()->insertBefore(inst);
             } 
-            else {
-                auto inst = new LoadMInstruction(use->getParent()->getParent(),
-                                                 temp, fp, off);
+            else 
+            {
+                auto inst = new LoadMInstruction(use->getParent()->getParent(), temp, fp, off);
                 use->getParent()->insertBefore(inst);
             }
         }
-        for (auto def : interval->defs) {
-            auto temp = new MachineOperand(*def);
-            MachineOperand* operand = nullptr;
-            MachineInstruction *inst1 = nullptr, *inst = nullptr;
-            if (interval->disp > 255 || interval->disp < -255) {
-                operand = new MachineOperand(MachineOperand::VREG,
-                                             SymbolTable::getLabel());
-                inst1 = new LoadMInstruction(def->getParent()->getParent(),
-                                             operand, off);
-                def->getParent()->insertAfter(inst1);
+        for (auto def : interval->defs) 
+        {
+            MachineOperand* temp = new MachineOperand(*def);
+            MachineOperand* op = nullptr;
+            MachineInstruction *inst1 = nullptr;
+            MachineInstruction *inst = nullptr;
+            if (op)
+            {
+                MachineOperand *t = new MachineOperand(*op);
+                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, t);
             }
-            if (operand)
-                inst =
-                    new StoreMInstruction(def->getParent()->getParent(), temp,
-                                          fp, new MachineOperand(*operand));
             else
-                inst = new StoreMInstruction(def->getParent()->getParent(),
-                                             temp, fp, off);
+            {
+                inst = new StoreMInstruction(def->getParent()->getParent(), temp, fp, off);
+            }
             if (inst1)
+            {
                 inst1->insertAfter(inst);
+            }
             else
+            {
                 def->getParent()->insertAfter(inst);
+            }
         }
     }
 }
 
 void LinearScan::expireOldIntervals(Interval *interval)
 {
+    //遍历Active列表
     auto it = active.begin();
     while (it != active.end()) 
     {
@@ -228,16 +225,20 @@ void LinearScan::expireOldIntervals(Interval *interval)
 
 void LinearScan::spillAtInterval(Interval *interval)
 {
+    // 寻找哪一个标志位可以置为true
     // Todo
-    //active 列表中最后一个 interval 和当前 unhandled interval 中选择一个 interval 将其溢出到栈中
     auto spill = active.back();
-    if (spill->end > interval->end) {
-        spill->spill = true;
-        interval->rreg = spill->rreg;
+    int end1 = spill -> end;
+    int end2 = interval -> end;
+    if (end1 > end2) 
+    {
+        spill -> spill = true;
+        interval -> rreg = spill->rreg;
         active.push_back(interval);
         sort(active.begin(), active.end(), compareEnd);
     } 
-    else {
+    else 
+    {
         interval->spill = true;
     }
 }

@@ -6,9 +6,9 @@ void LiveVariableAnalysis::pass(MachineUnit *unit)
 {
     for (auto &func : unit->getFuncs())
     {
-        computeUsePos(func);          //将所有操作数都放入alluse中
-        computeDefUse(func);         //根据exit.in=null计算分布block的in和out
-        iterate(func);               //对经过上边函数处理的block的in和out进行多次计算直到in不再改变
+        computeUsePos(func);
+        computeDefUse(func);
+        iterate(func);
     }
 }
 
